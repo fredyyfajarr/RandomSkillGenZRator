@@ -419,7 +419,7 @@ public class HomeFragment extends Fragment {
 
     private void updateQuestProgressIndicator(int count) {
         if (tvQuestProgress == null) return;
-        if (renderCompactQuestProgress(count)) return;
+        if (renderDotQuestProgress(count)) return;
 
         int questNumber = Math.min(count + 1, 3);
 
@@ -437,19 +437,19 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private boolean renderCompactQuestProgress(int count) {
+    private boolean renderDotQuestProgress(int count) {
         if (count >= 3) {
-            tvQuestProgress.setText("3/3 - Semua quest selesai");
+            tvQuestProgress.setText("● ● ●   Semua Quest Selesai");
             return true;
         }
 
         int questNumber = Math.min(count + 1, 3);
         if (questNumber == 1) {
-            tvQuestProgress.setText("1/3 - Quest pertama");
+            tvQuestProgress.setText("● ○ ○   Quest 1/3");
         } else if (questNumber == 2) {
-            tvQuestProgress.setText("2/3 - Quest kedua");
+            tvQuestProgress.setText("● ● ○   Quest 2/3");
         } else {
-            tvQuestProgress.setText("3/3 - Quest ketiga");
+            tvQuestProgress.setText("● ● ●   Quest 3/3");
         }
 
         return true;

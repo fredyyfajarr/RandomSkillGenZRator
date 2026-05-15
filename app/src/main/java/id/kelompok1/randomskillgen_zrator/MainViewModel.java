@@ -482,7 +482,7 @@ public class MainViewModel extends AndroidViewModel {
             if (finishedAfter < 3) {
                 cancelPendingNextQuestLoad();
                 pendingNextQuestLoad = this::loadHomeData;
-                mainHandler.postDelayed(pendingNextQuestLoad, 1200);
+                mainHandler.postDelayed(pendingNextQuestLoad, 2200);
             } else {
                 todayFinishedFromCloud.postValue(true);
             }
