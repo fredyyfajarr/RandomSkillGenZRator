@@ -40,8 +40,8 @@ public class StatsFragment extends Fragment {
     private TextView tvTotalXp;
 
     private View layoutChartContainer;
-    private LinearLayout layoutEmptyStats;
-    private LinearLayout layoutAchievements;
+    private View layoutEmptyStats;
+    private ViewGroup layoutAchievements;
 
     private StatsViewModel viewModel;
 

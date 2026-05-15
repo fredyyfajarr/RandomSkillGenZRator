@@ -11,7 +11,11 @@ import androidx.room.PrimaryKey;
  */
 @Entity(
         tableName = "DailySkill",
-        indices = { @Index(value = {"firebase_uid", "date"}) }
+        indices = {
+                @Index(value = {"firebase_uid", "date"}),
+                @Index(value = {"firebase_uid", "date", "quest_status"}),
+                @Index(value = {"skill_id"})
+        }
 )
 public class DailySkill {
 

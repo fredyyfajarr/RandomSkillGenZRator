@@ -25,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+import id.kelompok1.randomskillgen_zrator.data.FirebaseSyncManager;
 import id.kelompok1.randomskillgen_zrator.database.AppRepository;
 
 public class LoginActivity extends AppCompatActivity {
@@ -209,14 +210,16 @@ public class LoginActivity extends AppCompatActivity {
             String lastActiveDate
     ) {
         repo.getExecutor().execute(() -> {
-            repo.saveOrUpdateCloudUserToLocal(
+            repo.saveCloudUserIfNotStale(
                     uid,
+                    new FirebaseSyncManager.CloudUser(
                     level,
                     xp,
                     streak,
                     bestStreak,
                     totalActiveDays,
                     lastActiveDate
+                    )
             );
 
             runOnUiThread(this::goToMain);

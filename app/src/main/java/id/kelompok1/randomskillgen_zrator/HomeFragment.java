@@ -41,6 +41,8 @@ import id.kelompok1.randomskillgen_zrator.database.Skill;
 import id.kelompok1.randomskillgen_zrator.database.SkillCategory;
 import id.kelompok1.randomskillgen_zrator.database.SyncState;
 import id.kelompok1.randomskillgen_zrator.database.User;
+import id.kelompok1.randomskillgen_zrator.domain.QuestTimerCalculator;
+import id.kelompok1.randomskillgen_zrator.domain.TierLabelProvider;
 
 public class HomeFragment extends Fragment {
 
@@ -71,6 +73,7 @@ public class HomeFragment extends Fragment {
     private MaterialCardView cardSkeleton;
 
     private CountDownTimer questTimer;
+    private int runningTimerRecordId = -1;
 
     private int lastRenderedXp = 0;
 
@@ -118,6 +121,7 @@ public class HomeFragment extends Fragment {
             questTimer.cancel();
             questTimer = null;
         }
+        runningTimerRecordId = -1;
     }
 
     private void bindViews(View view) {
@@ -238,7 +242,6 @@ public class HomeFragment extends Fragment {
 
         if (record.isPending()) {
             viewModel.startTodaySkill();
-            startQuestTimer();
             return;
         }
 
@@ -253,15 +256,13 @@ public class HomeFragment extends Fragment {
 
         if (skill == null || record == null) return;
 
-        int durationMinutes = skill.duration_minutes > 0 ? skill.duration_minutes : 5;
-        long totalMillis = durationMinutes * 60L * 1000L;
+        if (questTimer != null && runningTimerRecordId == record.id) return;
 
-        long remainingMillis = totalMillis;
-
-        if (record.started_at_millis > 0) {
-            long elapsed = System.currentTimeMillis() - record.started_at_millis;
-            remainingMillis = totalMillis - elapsed;
-        }
+        long remainingMillis = QuestTimerCalculator.remainingMillis(
+                record,
+                skill,
+                System.currentTimeMillis()
+        );
 
         if (remainingMillis <= 0) {
             showTimerReadyState();
@@ -272,6 +273,7 @@ public class HomeFragment extends Fragment {
         if (questTimer != null) {
             questTimer.cancel();
         }
+        runningTimerRecordId = record.id;
 
         btnDone.setEnabled(false);
         btnDone.setText("Sedang Berjalan...");
@@ -288,6 +290,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFinish() {
+                runningTimerRecordId = -1;
                 showTimerReadyState();
                 viewModel.markTodaySkillReadyToClaim();
             }
@@ -316,6 +319,7 @@ public class HomeFragment extends Fragment {
             questTimer.cancel();
             questTimer = null;
         }
+        runningTimerRecordId = -1;
 
         if (tvQuestTimer != null) {
             tvQuestTimer.setText("Ready!");
@@ -341,6 +345,7 @@ public class HomeFragment extends Fragment {
                         questTimer.cancel();
                         questTimer = null;
                     }
+                    runningTimerRecordId = -1;
 
                     viewModel.skipTodaySkill();
 
@@ -364,6 +369,7 @@ public class HomeFragment extends Fragment {
                         questTimer.cancel();
                         questTimer = null;
                     }
+                    runningTimerRecordId = -1;
 
                     viewModel.skipTodaySkill();
 
@@ -413,6 +419,7 @@ public class HomeFragment extends Fragment {
 
     private void updateQuestProgressIndicator(int count) {
         if (tvQuestProgress == null) return;
+        if (renderCompactQuestProgress(count)) return;
 
         int questNumber = Math.min(count + 1, 3);
 
@@ -428,6 +435,24 @@ public class HomeFragment extends Fragment {
         } else {
             tvQuestProgress.setText("● ● ●   Quest 3/3");
         }
+    }
+
+    private boolean renderCompactQuestProgress(int count) {
+        if (count >= 3) {
+            tvQuestProgress.setText("3/3 - Semua quest selesai");
+            return true;
+        }
+
+        int questNumber = Math.min(count + 1, 3);
+        if (questNumber == 1) {
+            tvQuestProgress.setText("1/3 - Quest pertama");
+        } else if (questNumber == 2) {
+            tvQuestProgress.setText("2/3 - Quest kedua");
+        } else {
+            tvQuestProgress.setText("3/3 - Quest ketiga");
+        }
+
+        return true;
     }
 
     private void updateQuestButton(@Nullable DailySkill record, int count) {
@@ -499,7 +524,9 @@ public class HomeFragment extends Fragment {
                 btnSkipQuest.setVisibility(View.VISIBLE);
             }
 
-            startQuestTimer();
+            if (questTimer == null || runningTimerRecordId != record.id) {
+                startQuestTimer();
+            }
             return;
         }
 
@@ -568,7 +595,7 @@ public class HomeFragment extends Fragment {
             tvXp.setTextColor(Color.parseColor("#F59E0B"));
         } else {
             tvXp.setText(user.xp + " / " + requiredXp + " XP");
-            tvXp.setTextColor(Color.parseColor("#718096"));
+            tvXp.setTextColor(ContextCompat.getColor(requireContext(), R.color.text_secondary));
         }
     }
 
@@ -596,11 +623,7 @@ public class HomeFragment extends Fragment {
     }
 
     private String getTierLabel(int level) {
-        if (level <= 5) return "Novice";
-        if (level <= 15) return "Apprentice";
-        if (level <= 30) return "Royal Knight";
-        if (level <= 50) return "Guild Master";
-        return "Grandmaster";
+        return TierLabelProvider.homeTier(level);
     }
 
     private void playSfx() {

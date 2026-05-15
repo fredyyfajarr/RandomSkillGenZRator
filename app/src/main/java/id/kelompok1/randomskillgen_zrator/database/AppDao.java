@@ -36,6 +36,9 @@ public interface AppDao {
     @Query("SELECT * FROM Skill WHERE id = :id LIMIT 1")
     Skill getSkillById(int id);
 
+    @Query("SELECT * FROM Skill WHERE id IN (:ids)")
+    List<Skill> getSkillsByIds(List<Integer> ids);
+
     @Query("SELECT * FROM Skill WHERE title = :title AND firebase_uid = :uid LIMIT 1")
     Skill getSkillByTitleForUser(String title, String uid);
 
@@ -82,6 +85,9 @@ public interface AppDao {
     @Query("SELECT * FROM DailySkill WHERE firebase_uid = :uid ORDER BY date DESC, id DESC")
     List<DailySkill> getAllDailySkills(String uid);
 
+    @Query("SELECT * FROM DailySkill WHERE firebase_uid = :uid AND is_completed = 1 ORDER BY date DESC, id DESC")
+    List<DailySkill> getCompletedDailySkills(String uid);
+
     @Query("DELETE FROM DailySkill WHERE firebase_uid = :uid")
     void deleteAllHistoryForUser(String uid);
 
@@ -118,4 +124,10 @@ public interface AppDao {
     @Query("SELECT COUNT(*) FROM DailySkill ds INNER JOIN Skill s ON ds.skill_id = s.id " +
             "WHERE ds.firebase_uid = :uid AND ds.is_completed = 1 AND s.category = :category")
     int getCompletedQuestCountByCategory(String uid, String category);
+
+    @Query("SELECT s.category AS category, COUNT(*) AS count " +
+            "FROM DailySkill ds INNER JOIN Skill s ON ds.skill_id = s.id " +
+            "WHERE ds.firebase_uid = :uid AND ds.is_completed = 1 " +
+            "GROUP BY s.category")
+    List<CategoryCount> getCompletedQuestCountByCategoryForUser(String uid);
 }
