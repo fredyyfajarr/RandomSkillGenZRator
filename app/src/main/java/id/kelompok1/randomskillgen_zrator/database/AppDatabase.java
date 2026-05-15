@@ -16,7 +16,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
                 User.class,
                 Achievement.class
         },
-        version = 7,
+        version = 6,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -77,20 +77,6 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
-        @Override
-        public void migrate(@NonNull SupportSQLiteDatabase db) {
-            db.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_DailySkill_firebase_uid_date_quest_status " +
-                            "ON DailySkill (firebase_uid, date, quest_status)"
-            );
-            db.execSQL(
-                    "CREATE INDEX IF NOT EXISTS index_DailySkill_skill_id " +
-                            "ON DailySkill (skill_id)"
-            );
-        }
-    };
-
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
@@ -102,11 +88,11 @@ public abstract class AppDatabase extends RoomDatabase {
                             )
                             .addMigrations(
                                     MIGRATION_2_3,
-                                     MIGRATION_3_4,
-                                     MIGRATION_4_5,
-                                     MIGRATION_5_6,
-                                     MIGRATION_6_7
-                             )
+                                    MIGRATION_3_4,
+                                    MIGRATION_4_5,
+                                    MIGRATION_5_6
+                            )
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

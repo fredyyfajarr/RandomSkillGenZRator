@@ -4,15 +4,10 @@ import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import id.kelompok1.randomskillgen_zrator.data.FirebaseSyncManager;
-import id.kelompok1.randomskillgen_zrator.domain.StreakCalculator;
 
 public class AppRepository {
 
@@ -96,36 +91,6 @@ public class AppRepository {
         } else {
             dao.updateUser(user);
         }
-    }
-
-    public void saveCloudUserIfNotStale(String uid, FirebaseSyncManager.CloudUser cloudUser) {
-        if (cloudUser == null) return;
-
-        User local = dao.getUser(uid);
-        if (!StreakCalculator.shouldUseCloudUser(local, cloudUser.lastActiveDate)) {
-            return;
-        }
-
-        if (local != null && local.last_active_date != null
-                && local.last_active_date.equals(cloudUser.lastActiveDate)) {
-            local.level = Math.max(local.level, cloudUser.level);
-            local.xp = Math.max(local.xp, cloudUser.xp);
-            local.streak = Math.max(local.streak, cloudUser.streak);
-            local.best_streak = Math.max(local.best_streak, cloudUser.bestStreak);
-            local.total_active_days = Math.max(local.total_active_days, cloudUser.totalActiveDays);
-            dao.updateUser(local);
-            return;
-        }
-
-        saveOrUpdateCloudUserToLocal(
-                uid,
-                cloudUser.level,
-                cloudUser.xp,
-                cloudUser.streak,
-                cloudUser.bestStreak,
-                cloudUser.totalActiveDays,
-                cloudUser.lastActiveDate
-        );
     }
 
     public void saveCloudUserIfLocalMissing(
@@ -299,24 +264,26 @@ public class AppRepository {
     }
 
     public HistoryResult getCompletedHistoryWithSkills(String uid) {
-        List<DailySkill> completed = dao.getCompletedDailySkills(uid);
+        List<DailySkill> records = dao.getAllDailySkills(uid);
+        List<DailySkill> completed = new ArrayList<>();
         Map<Integer, Skill> skillMap = new HashMap<>();
 
-        if (completed != null && !completed.isEmpty()) {
-            Set<Integer> skillIds = new HashSet<>();
-            for (DailySkill record : completed) {
-                skillIds.add(record.skill_id);
-            }
+        if (records != null) {
+            for (DailySkill record : records) {
+                if (!record.is_completed) continue;
 
-            List<Skill> skills = dao.getSkillsByIds(new ArrayList<>(skillIds));
-            if (skills != null) {
-                for (Skill skill : skills) {
-                    skillMap.put(skill.id, skill);
+                completed.add(record);
+
+                if (!skillMap.containsKey(record.skill_id)) {
+                    Skill skill = dao.getSkillById(record.skill_id);
+                    if (skill != null) {
+                        skillMap.put(skill.id, skill);
+                    }
                 }
             }
         }
 
-        return new HistoryResult(completed != null ? completed : new ArrayList<>(), skillMap);
+        return new HistoryResult(completed, skillMap);
     }
 
     // -------------------------------------------------------------------------
@@ -326,18 +293,34 @@ public class AppRepository {
         User user = dao.getUser(uid);
         int currentXp = user != null ? user.xp : 0;
 
+        List<DailySkill> records = dao.getAllDailySkills(uid);
+        Map<Integer, Skill> skillCache = new HashMap<>();
         Map<String, Integer> categoryCount = new HashMap<>();
 
-        List<CategoryCount> counts = dao.getCompletedQuestCountByCategoryForUser(uid);
-        if (counts != null) {
-            for (CategoryCount item : counts) {
-                if (item.category != null && item.count > 0) {
-                    categoryCount.put(item.category, item.count);
+        int totalCompleted = 0;
+
+        if (records != null) {
+            for (DailySkill record : records) {
+                if (record.is_completed && !skillCache.containsKey(record.skill_id)) {
+                    Skill skill = dao.getSkillById(record.skill_id);
+                    if (skill != null) {
+                        skillCache.put(skill.id, skill);
+                    }
+                }
+            }
+
+            for (DailySkill record : records) {
+                if (!record.is_completed) continue;
+
+                totalCompleted++;
+
+                Skill skill = skillCache.get(record.skill_id);
+                if (skill != null) {
+                    categoryCount.merge(skill.category, 1, Integer::sum);
                 }
             }
         }
 
-        int totalCompleted = dao.getTotalCompletedQuestCount(uid);
         return new StatsResult(totalCompleted, currentXp, categoryCount);
     }
 

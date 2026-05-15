@@ -28,7 +28,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 import id.kelompok1.randomskillgen_zrator.database.SyncState;
 import id.kelompok1.randomskillgen_zrator.database.User;
-import id.kelompok1.randomskillgen_zrator.domain.TierLabelProvider;
 
 public class ProfileFragment extends Fragment {
 
@@ -181,7 +180,11 @@ public class ProfileFragment extends Fragment {
     }
 
     private String getTierLabel(int level) {
-        return TierLabelProvider.profileTier(level);
+        if (level <= 5) return "[ NOVICE ADVENTURER ]";
+        if (level <= 15) return "[ APPRENTICE ]";
+        if (level <= 30) return "[ ROYAL KNIGHT ]";
+        if (level <= 50) return "[ GUILD MASTER ]";
+        return "[ GRANDMASTER ]";
     }
 
     private void confirmReset() {

@@ -17,6 +17,5 @@ captures/
 *.jks
 *.keystore
 
-# Firebase config should be kept local for public repositories.
-google-services.json
-app/google-services.json
+# Google services boleh dipertimbangkan jangan dipush kalau repo public
+ google-services.json
