@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "178882118551",
+    "project_id": "random-skill-gen-zrator",
+    "storage_bucket": "random-skill-gen-zrator.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178882118551:android:b61b2f720a9bcddd48bad2",
+        "android_client_info": {
+          "package_name": "id.kelompok1.randomskillgen_zrator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178882118551-reeg3m575342dp7vm38qer8nbr0626d8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.kelompok1.randomskillgen_zrator",
+            "certificate_hash": "50879a9a8032f016f56961bb4009094d439a6920"
+          }
+        },
+        {
+          "client_id": "178882118551-jh1kc40jovcbdpfq2menbsm6untmm2f9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPLwYeIHgzcjVCDl3T_hcgKQ0HrZbA3Eo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178882118551-jh1kc40jovcbdpfq2menbsm6untmm2f9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

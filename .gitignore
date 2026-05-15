@@ -1,0 +1,21 @@
+.gradle/
+.idea/
+build/
+*/build/
+
+local.properties
+*.iml
+
+.DS_Store
+Thumbs.db
+
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Keystore / signing
+*.jks
+*.keystore
+
+# Google services boleh dipertimbangkan jangan dipush kalau repo public
+ google-services.json

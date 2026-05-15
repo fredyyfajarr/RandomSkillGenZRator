@@ -1,0 +1,58 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Outer glow circle -->
+    <path
+        android:fillColor="#3B2F10"
+        android:pathData="M48,8a40,40 0,1 0,0.1,0z" />
+
+    <!-- Inner circle -->
+    <path
+        android:fillColor="#5B4612"
+        android:pathData="M48,14a34,34 0,1 0,0.1,0z" />
+
+    <!-- Trophy cup -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M31,25h34v10c0,12.2 -7.3,22.2 -17,22.2S31,47.2 31,35z" />
+
+    <!-- Trophy left handle -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M31,30h-8c-1.7,0 -3,1.3 -3,3v4c0,8 5.7,14.7 13.2,16.3l2.2,-6.2C30.1,46.2 26,41.8 26,36.5V36h5z" />
+
+    <!-- Trophy right handle -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M65,30h8c1.7,0 3,1.3 3,3v4c0,8 -5.7,14.7 -13.2,16.3l-2.2,-6.2C65.9,46.2 70,41.8 70,36.5V36h-5z" />
+
+    <!-- Cup shine -->
+    <path
+        android:fillColor="#FFF3B0"
+        android:pathData="M39,30h7v20h-7z"
+        android:fillAlpha="0.55" />
+
+    <!-- Stem -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M43,56h10v10H43z" />
+
+    <!-- Base -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M35,66h26c2.2,0 4,1.8 4,4v3H31v-3c0,-2.2 1.8,-4 4,-4z" />
+
+    <!-- Base shadow -->
+    <path
+        android:fillColor="#B7791F"
+        android:pathData="M28,73h40c1.7,0 3,1.3 3,3v3H25v-3c0,-1.7 1.3,-3 3,-3z" />
+
+    <!-- Star in cup -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,32l2.6,5.2l5.8,0.8l-4.2,4.1l1,5.8L48,45.2l-5.2,2.7l1,-5.8l-4.2,-4.1l5.8,-0.8z" />
+
+</vector>

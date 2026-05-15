@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.RandomSkillGenZRator" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+    <style name="ShapeAppearance.GenZRator.Circle" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="Theme.RandomSkillGenZRator" parent="Base.Theme.RandomSkillGenZRator" />
+</resources>

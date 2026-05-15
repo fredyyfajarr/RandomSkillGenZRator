@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chronicles: Gulungan scroll dengan tulisan -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Body scroll -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M6,4 Q5,4 5,5 L5,19 Q5,20 6,20 L18,20 Q19,20 19,19 L19,5 Q19,4 18,4 Z" />
+
+    <!-- Roll atas -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M4,5 Q4,3 6,3 L18,3 Q20,3 20,5" />
+
+    <!-- Roll bawah -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round"
+        android:pathData="M4,19 Q4,21 6,21 L18,21 Q20,21 20,19" />
+
+    <!-- Garis teks 1 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.3"
+        android:strokeLineCap="round"
+        android:pathData="M8,8 L16,8" />
+
+    <!-- Garis teks 2 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.3"
+        android:strokeLineCap="round"
+        android:pathData="M8,11 L16,11" />
+
+    <!-- Garis teks 3 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="1.3"
+        android:strokeLineCap="round"
+        android:pathData="M8,14 L13,14" />
+
+    <!-- Pita pengikat kecil -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M11.2,3 Q12,2.2 12.8,3 Q12,3.8 11.2,3 Z" />
+
+</vector>
