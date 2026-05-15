@@ -29,6 +29,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import id.kelompok1.randomskillgen_zrator.database.AppRepository;
 import id.kelompok1.randomskillgen_zrator.database.SkillCategory;
+import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -38,7 +39,11 @@ public class MainActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String> notifPermissionLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.RequestPermission(),
-                    granted -> NotificationScheduler.scheduleDailyReminder(this)
+                    granted -> {
+                        if (Boolean.TRUE.equals(granted)) {
+                            NotificationScheduler.scheduleDailyReminder(this);
+                        }
+                    }
             );
 
     @Override
@@ -240,14 +245,10 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Simpan", (dialog, which) -> {
             String title = etTitle.getText().toString().trim();
+            String titleError = CustomSkillValidator.validateTitle(title);
 
-            if (title.isEmpty()) {
-                Toast.makeText(this, "Judul skill tidak boleh kosong!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (title.length() < 3) {
-                Toast.makeText(this, "Judul skill terlalu pendek.", Toast.LENGTH_SHORT).show();
+            if (titleError != null) {
+                Toast.makeText(this, titleError, Toast.LENGTH_SHORT).show();
                 return;
             }
 

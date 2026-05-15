@@ -13,19 +13,15 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import id.kelompok1.randomskillgen_zrator.data.FirebaseSyncManager;
 import id.kelompok1.randomskillgen_zrator.database.Achievement;
 import id.kelompok1.randomskillgen_zrator.database.AppRepository;
 import id.kelompok1.randomskillgen_zrator.database.DailySkill;
@@ -33,6 +29,8 @@ import id.kelompok1.randomskillgen_zrator.database.Skill;
 import id.kelompok1.randomskillgen_zrator.database.SkillCategory;
 import id.kelompok1.randomskillgen_zrator.database.SyncState;
 import id.kelompok1.randomskillgen_zrator.database.User;
+import id.kelompok1.randomskillgen_zrator.domain.StreakCalculator;
+import id.kelompok1.randomskillgen_zrator.domain.XpCalculator;
 
 public class MainViewModel extends AndroidViewModel {
 
@@ -48,6 +46,7 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<Achievement> achievementUnlockedEvent = new MutableLiveData<>();
 
     private final AppRepository repo;
+    private final FirebaseSyncManager firebaseSync;
     private final ExecutorService executor;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -59,6 +58,7 @@ public class MainViewModel extends AndroidViewModel {
     public MainViewModel(@NonNull Application application) {
         super(application);
         repo = AppRepository.getInstance(application);
+        firebaseSync = new FirebaseSyncManager();
         executor = repo.getExecutor();
         fetchDynamicQuote();
     }
@@ -128,59 +128,52 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     private void syncUserAndHistoryFromCloudThenLoad(String uid) {
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(userDoc -> {
-                    executor.execute(() -> {
-                        if (userDoc.exists()) {
-                            int cloudLevel = safeInt(userDoc, "level", 1);
-                            int cloudXp = safeInt(userDoc, "xp", 0);
-                            int cloudStreak = safeInt(userDoc, "streak", 0);
-                            int cloudBestStreak = safeInt(userDoc, "best_streak", cloudStreak);
-                            int cloudTotalActiveDays = safeInt(userDoc, "total_active_days", 0);
-                            String cloudLastActiveDate = userDoc.getString("last_active_date");
+        firebaseSync.fetchUser(uid, new FirebaseSyncManager.UserCallback() {
+            @Override
+            public void onSuccess(FirebaseSyncManager.CloudUser cloudUser) {
+                executor.execute(() -> {
+                    if (cloudUser != null) {
+                        repo.saveCloudUserIfNotStale(uid, cloudUser);
+                    }
 
-                            repo.saveOrUpdateCloudUserToLocal(
-                                    uid,
-                                    cloudLevel,
-                                    cloudXp,
-                                    cloudStreak,
-                                    cloudBestStreak,
-                                    cloudTotalActiveDays,
-                                    cloudLastActiveDate
-                            );
-                        }
-
-                        restoreAllDailyQuestsFromCloud(uid);
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    android.util.Log.e("MainViewModel", "Sync user cloud failed", e);
-                    executor.execute(() -> loadLocalHomeData(uid));
+                    restoreAllDailyQuestsFromCloud(uid);
                 });
+            }
+
+            @Override
+            public void onFailure(Exception error) {
+                android.util.Log.w("MainViewModel", "Cloud user sync skipped.");
+                executor.execute(() -> loadLocalHomeData(uid));
+            }
+        });
     }
 
     private void restoreAllDailyQuestsFromCloud(String uid) {
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .collection("daily_quests")
-                .get()
-                .addOnSuccessListener(snapshot -> executor.execute(() -> {
-                    if (snapshot != null && !snapshot.isEmpty()) {
-                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
-                            restoreOneDailyQuestFromDoc(uid, doc);
-                        }
+        List<DocumentSnapshot> cloudQuestDocs = new ArrayList<>();
+
+        firebaseSync.restoreDailyQuests(uid, new FirebaseSyncManager.QuestRestoreCallback() {
+            @Override
+            public void onQuest(DocumentSnapshot document) {
+                cloudQuestDocs.add(document);
+            }
+
+            @Override
+            public void onComplete() {
+                executor.execute(() -> {
+                    for (DocumentSnapshot doc : cloudQuestDocs) {
+                        restoreOneDailyQuestFromDoc(uid, doc);
                     }
 
                     loadLocalHomeData(uid);
-                }))
-                .addOnFailureListener(e -> {
-                    android.util.Log.e("MainViewModel", "Restore all daily quests failed", e);
-                    executor.execute(() -> loadLocalHomeData(uid));
                 });
+            }
+
+            @Override
+            public void onFailure(Exception error) {
+                android.util.Log.w("MainViewModel", "Cloud quest restore skipped.");
+                executor.execute(() -> loadLocalHomeData(uid));
+            }
+        });
     }
 
     private void restoreOneDailyQuestFromDoc(String uid, DocumentSnapshot doc) {
@@ -288,38 +281,17 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     private User checkAndResetStreakIfNeeded(User u, String today) {
-        if (u.last_active_date == null) {
-            u.last_active_date = today;
-            repo.updateUser(u);
-            return u;
-        }
+        String oldDate = u.last_active_date;
+        int oldStreak = u.streak;
 
-        if (u.last_active_date.equals(today)) return u;
+        StreakCalculator.resetIfInactive(u, today);
 
-        long dayDiff = daysBetween(u.last_active_date, today);
-
-        if (dayDiff > 1) {
-            u.streak = 0;
-            u.last_active_date = today;
+        if (oldStreak != u.streak || oldDate == null || !oldDate.equals(u.last_active_date)) {
             repo.updateUser(u);
             syncToFirestore(u.firebase_uid, u);
         }
 
         return u;
-    }
-
-    private long daysBetween(String from, String to) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            Date d1 = sdf.parse(from);
-            Date d2 = sdf.parse(to);
-
-            if (d1 == null || d2 == null) return -1;
-
-            return (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24);
-        } catch (ParseException e) {
-            return -1;
-        }
     }
 
     private void generateNewDailySkill(String date, String uid) {
@@ -353,16 +325,15 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public static int getRequiredXpForLevel(int level) {
-        if (level <= 1) return 100;
-        return 100 + ((level - 1) * 75);
+        return XpCalculator.requiredXpForLevel(level);
     }
 
     public static boolean isStreakBonusDay(int nextStreak) {
-        return nextStreak > 0 && nextStreak % 7 == 0;
+        return XpCalculator.isStreakBonusDay(nextStreak);
     }
 
     public static int calculateRewardXp(int baseXp, int nextStreak) {
-        return isStreakBonusDay(nextStreak) ? (int) (baseXp * 1.5f) : baseXp;
+        return XpCalculator.rewardXp(baseXp, nextStreak);
     }
 
     public void startTodaySkill() {
@@ -480,24 +451,11 @@ public class MainViewModel extends AndroidViewModel {
             int baseXp = s != null ? s.xp_reward : 50;
 
             int nextStreak = u.streak + 1;
-            lastGainedXp = calculateRewardXp(baseXp, nextStreak);
-
-            u.xp += lastGainedXp;
-
-            while (u.xp >= getRequiredXpForLevel(u.level)) {
-                u.xp -= getRequiredXpForLevel(u.level);
-                u.level++;
-            }
+            lastGainedXp = XpCalculator.rewardXp(baseXp, nextStreak);
+            XpCalculator.addXpAndApplyLevelUp(u, lastGainedXp);
 
             if (finishedAfter == 1) {
-                u.streak++;
-                u.total_active_days++;
-
-                if (u.streak > u.best_streak) {
-                    u.best_streak = u.streak;
-                }
-
-                u.last_active_date = today;
+                StreakCalculator.applyFirstFinishedQuestOfDay(u, today);
 
                 boolean isBonus = u.streak > 0 && u.streak % 7 == 0;
                 streakBonusActive.postValue(isBonus);
@@ -551,6 +509,7 @@ public class MainViewModel extends AndroidViewModel {
             currentRecord.postValue(null);
             currentSkill.postValue(null);
 
+            firebaseSync.deleteAllDailyQuestBackups(uid);
             resetTodayCloudProgress(uid, today);
 
             mainHandler.postDelayed(this::loadHomeData, 800);
@@ -558,76 +517,15 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     private void resetTodayCloudProgress(String uid, String today) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        Map<String, Object> progress = new HashMap<>();
-        progress.put("date", today);
-        progress.put("completed_count", 0);
-        progress.put("finished_count", 0);
-        progress.put("is_day_finished", false);
-        progress.put("updated_at", FieldValue.serverTimestamp());
-
-        db.collection("users")
-                .document(uid)
-                .collection("daily_progress")
-                .document(today)
-                .set(progress);
-
-        for (int slot = 1; slot <= 3; slot++) {
-            String docId = today + "_" + slot;
-
-            db.collection("users")
-                    .document(uid)
-                    .collection("daily_quests")
-                    .document(docId)
-                    .delete();
-        }
+        firebaseSync.resetTodayProgress(uid, today);
     }
 
     private void backupDailyProgressToFirestore(String uid, String today, int finishedCount) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("date", today);
-        data.put("completed_count", finishedCount);
-        data.put("finished_count", finishedCount);
-        data.put("is_day_finished", finishedCount >= 3);
-        data.put("updated_at", FieldValue.serverTimestamp());
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .collection("daily_progress")
-                .document(today)
-                .set(data);
+        firebaseSync.saveDailyProgress(uid, today, finishedCount);
     }
 
     private void backupDailyQuestToFirestore(String uid, DailySkill record, Skill skill, int slot) {
-        if (uid == null || uid.trim().isEmpty()) return;
-        if (record == null || skill == null) return;
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("date", record.date);
-        data.put("slot", slot);
-        data.put("skill_title", skill.title);
-        data.put("category", skill.category);
-        data.put("xp_reward", skill.xp_reward);
-        data.put("is_completed", record.is_completed);
-        data.put("completed_at", record.completed_at);
-        data.put("difficulty", skill.difficulty != null ? skill.difficulty : Skill.MEDIUM);
-        data.put("duration_minutes", skill.duration_minutes > 0 ? skill.duration_minutes : 5);
-        data.put("quest_status", record.quest_status != null ? record.quest_status : DailySkill.STATUS_PENDING);
-        data.put("started_at", record.started_at);
-        data.put("started_at_millis", record.started_at_millis);
-        data.put("skipped_at", record.skipped_at);
-        data.put("updated_at", FieldValue.serverTimestamp());
-
-        String docId = record.date + "_" + slot;
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .collection("daily_quests")
-                .document(docId)
-                .set(data);
+        firebaseSync.saveDailyQuest(uid, record, skill, slot);
     }
 
     private int calculateSlotForRecord(DailySkill record) {
@@ -650,23 +548,18 @@ public class MainViewModel extends AndroidViewModel {
     private void syncToFirestore(String uid, User u) {
         syncState.postValue(SyncState.SYNCING);
 
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("level", u.level);
-        updates.put("xp", u.xp);
-        updates.put("streak", u.streak);
-        updates.put("best_streak", u.best_streak);
-        updates.put("total_active_days", u.total_active_days);
-        updates.put("last_active_date", u.last_active_date);
+        firebaseSync.saveUser(uid, u, new FirebaseSyncManager.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                syncState.postValue(SyncState.SUCCESS);
+            }
 
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .update(updates)
-                .addOnSuccessListener(v -> syncState.postValue(SyncState.SUCCESS))
-                .addOnFailureListener(e -> {
-                    android.util.Log.w("MainViewModel", "Firestore sync failed: " + e.getMessage());
-                    syncState.postValue(SyncState.ERROR);
-                });
+            @Override
+            public void onFailure(Exception error) {
+                android.util.Log.w("MainViewModel", "Firestore sync failed.");
+                syncState.postValue(SyncState.ERROR);
+            }
+        });
     }
 
     private void fetchDynamicQuote() {
@@ -715,11 +608,6 @@ public class MainViewModel extends AndroidViewModel {
     private String currentUid() {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         return fUser != null ? fUser.getUid() : null;
-    }
-
-    private int safeInt(DocumentSnapshot doc, String field, int defaultValue) {
-        Long val = doc.getLong(field);
-        return val != null ? val.intValue() : defaultValue;
     }
 
     private String todayDate() {
