@@ -48,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
             {"Edukasi", SkillCategory.EDUCATION},
     };
 
+    private static final String[][] DIFFICULTY_OPTIONS = {
+            {"Easy - 1 menit", Skill.EASY},
+            {"Medium - 3 menit", Skill.MEDIUM},
+            {"Hard - 5 menit", Skill.HARD},
+    };
+
     private final ActivityResultLauncher<String> notifPermissionLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.RequestPermission(),
@@ -194,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tvQuote = view.findViewById(R.id.tv_zap_quote);
         MaterialButton btnCustom = view.findViewById(R.id.btn_zap_custom_skill);
-        MaterialButton btnManage = view.findViewById(R.id.btn_manage_custom_skill);
 
         String[] quotes = {
                 "\"Jangan nunggu motivasi datang, mulai aja dulu! 🚀\"",
@@ -207,11 +212,6 @@ public class MainActivity extends AppCompatActivity {
         tvQuote.setText(quotes[(int) (Math.random() * quotes.length)]);
 
         btnCustom.setOnClickListener(v -> {
-            bottomSheetDialog.dismiss();
-            showCustomSkillDialog();
-        });
-
-        btnManage.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             showManageCustomSkillsDialog();
         });
@@ -258,6 +258,15 @@ public class MainActivity extends AppCompatActivity {
         ((RadioButton) rgCategory.getChildAt(2)).setChecked(true);
         layout.addView(rgCategory);
 
+        TextView tvDifficultyLabel = new TextView(this);
+        tvDifficultyLabel.setText("Pilih Difficulty:");
+        tvDifficultyLabel.setTextSize(14f);
+        tvDifficultyLabel.setPadding(0, 24, 0, 8);
+        layout.addView(tvDifficultyLabel);
+
+        RadioGroup rgDifficulty = createDifficultyRadioGroup(Skill.MEDIUM);
+        layout.addView(rgDifficulty);
+
         builder.setView(layout);
 
         builder.setPositiveButton("Simpan", (dialog, which) -> {
@@ -282,11 +291,20 @@ public class MainActivity extends AppCompatActivity {
                     ? (String) selected.getTag()
                     : SkillCategory.FUN;
 
-            int xpReward = SkillCategory.getXpForCategory(chosenCategory);
+            String chosenDifficulty = selectedDifficulty(rgDifficulty);
+            int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
+            int durationMinutes = durationForDifficulty(chosenDifficulty);
             String uid = fUser.getUid();
 
             repo.getExecutor().execute(() ->
-                    repo.addCustomSkill(uid, title, chosenCategory, xpReward)
+                    repo.addCustomSkill(
+                            uid,
+                            title,
+                            chosenCategory,
+                            xpReward,
+                            chosenDifficulty,
+                            durationMinutes
+                    )
             );
 
             Toast.makeText(
@@ -328,6 +346,17 @@ public class MainActivity extends AppCompatActivity {
         RadioGroup rgCategory = createCategoryRadioGroup(existingSkill.category);
         layout.addView(rgCategory);
 
+        TextView tvDifficultyLabel = new TextView(this);
+        tvDifficultyLabel.setText("Pilih Difficulty:");
+        tvDifficultyLabel.setTextSize(14f);
+        tvDifficultyLabel.setPadding(0, 24, 0, 8);
+        layout.addView(tvDifficultyLabel);
+
+        RadioGroup rgDifficulty = createDifficultyRadioGroup(
+                existingSkill.difficulty != null ? existingSkill.difficulty : Skill.MEDIUM
+        );
+        layout.addView(rgDifficulty);
+
         builder.setView(layout);
         builder.setPositiveButton("Simpan Perubahan", null);
         builder.setNegativeButton("Batal", (d, w) -> d.cancel());
@@ -349,9 +378,18 @@ public class MainActivity extends AppCompatActivity {
                             ? (String) selected.getTag()
                             : SkillCategory.FUN;
 
-                    int xpReward = SkillCategory.getXpForCategory(chosenCategory);
+                    String chosenDifficulty = selectedDifficulty(rgDifficulty);
+                    int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
+                    int durationMinutes = durationForDifficulty(chosenDifficulty);
                     repo.getExecutor().execute(() ->
-                            repo.updateCustomSkill(existingSkill, title, chosenCategory, xpReward)
+                            repo.updateCustomSkill(
+                                    existingSkill,
+                                    title,
+                                    chosenCategory,
+                                    xpReward,
+                                    chosenDifficulty,
+                                    durationMinutes
+                            )
                     );
 
                     Toast.makeText(
@@ -386,6 +424,60 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return rgCategory;
+    }
+
+    private RadioGroup createDifficultyRadioGroup(String selectedDifficulty) {
+        RadioGroup rgDifficulty = new RadioGroup(this);
+        rgDifficulty.setOrientation(RadioGroup.VERTICAL);
+
+        for (String[] difficulty : DIFFICULTY_OPTIONS) {
+            RadioButton rb = new RadioButton(this);
+            rb.setText(difficulty[0]);
+            rb.setTag(difficulty[1]);
+            rb.setPadding(0, 8, 0, 8);
+            rgDifficulty.addView(rb);
+
+            if (difficulty[1].equals(selectedDifficulty)) {
+                rb.setChecked(true);
+            }
+        }
+
+        if (rgDifficulty.getCheckedRadioButtonId() == -1 && rgDifficulty.getChildCount() > 1) {
+            ((RadioButton) rgDifficulty.getChildAt(1)).setChecked(true);
+        }
+
+        return rgDifficulty;
+    }
+
+    private String selectedDifficulty(RadioGroup rgDifficulty) {
+        int checkedId = rgDifficulty.getCheckedRadioButtonId();
+        RadioButton selected = rgDifficulty.findViewById(checkedId);
+
+        return selected != null && selected.getTag() != null
+                ? (String) selected.getTag()
+                : Skill.MEDIUM;
+    }
+
+    private int durationForDifficulty(String difficulty) {
+        if (Skill.EASY.equals(difficulty)) {
+            return 1;
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return 5;
+        }
+        return 3;
+    }
+
+    private int calculateCustomXp(String category, String difficulty) {
+        int baseXp = SkillCategory.getXpForCategory(category);
+
+        if (Skill.EASY.equals(difficulty)) {
+            return Math.max(20, baseXp - 20);
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return baseXp + 30;
+        }
+        return baseXp;
     }
 
     private void showManageCustomSkillsDialog() {

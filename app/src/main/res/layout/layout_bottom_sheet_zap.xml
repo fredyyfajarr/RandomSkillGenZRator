@@ -29,14 +29,14 @@
         android:layout_marginBottom="24dp"
         android:fontFamily="@font/cinzel_regular"
         android:text="Suntikan motivasi &amp; portal aksi cepat."
-        android:textColor="#9CA3AF"
+        android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/surface_card"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
         app:strokeColor="@color/accent_yellow"
@@ -50,7 +50,7 @@
             android:padding="16dp"
             android:text="💡 Scroll of Wisdom Loading..."
             android:textAlignment="center"
-            android:textColor="@color/text_dark"
+            android:textColor="@color/text_primary"
             android:textStyle="italic" />
     </com.google.android.material.card.MaterialCardView>
 
@@ -59,27 +59,13 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:fontFamily="@font/cinzel_semibold"
-        android:text="CREATE CUSTOM CHALLENGE"
-        android:textColor="@color/bg_light"
+        android:text="CUSTOM CHALLENGE"
+        android:textColor="@color/primary_dark"
         android:textSize="16sp"
         app:backgroundTint="@color/accent_yellow"
         app:cornerRadius="8dp"
         app:icon="@drawable/ic_bolt"
         app:iconGravity="textStart"
-        app:iconTint="@color/bg_light" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_manage_custom_skill"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="10dp"
-        android:fontFamily="@font/cinzel_semibold"
-        android:text="MANAGE CUSTOM CHALLENGE"
-        android:textColor="@color/accent_yellow"
-        android:textSize="14sp"
-        app:backgroundTint="@color/surface_card"
-        app:cornerRadius="8dp"
-        app:strokeColor="@color/accent_yellow"
-        app:strokeWidth="1dp" />
+        app:iconTint="@color/primary_dark" />
 
 </LinearLayout>
