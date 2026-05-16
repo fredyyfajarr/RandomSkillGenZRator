@@ -267,6 +267,10 @@ public class MainActivity extends AppCompatActivity {
         RadioGroup rgDifficulty = createDifficultyRadioGroup(Skill.MEDIUM);
         layout.addView(rgDifficulty);
 
+        TextView tvPreview = createCustomSkillPreview();
+        layout.addView(tvPreview);
+        bindCustomSkillPreview(tvPreview, rgCategory, rgDifficulty);
+
         builder.setView(layout);
 
         builder.setPositiveButton("Simpan", (dialog, which) -> {
@@ -284,13 +288,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            int checkedId = rgCategory.getCheckedRadioButtonId();
-            RadioButton selected = rgCategory.findViewById(checkedId);
-
-            String chosenCategory = (selected != null && selected.getTag() != null)
-                    ? (String) selected.getTag()
-                    : SkillCategory.FUN;
-
+            String chosenCategory = selectedCategory(rgCategory);
             String chosenDifficulty = selectedDifficulty(rgDifficulty);
             int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
             int durationMinutes = durationForDifficulty(chosenDifficulty);
@@ -357,6 +355,10 @@ public class MainActivity extends AppCompatActivity {
         );
         layout.addView(rgDifficulty);
 
+        TextView tvPreview = createCustomSkillPreview();
+        layout.addView(tvPreview);
+        bindCustomSkillPreview(tvPreview, rgCategory, rgDifficulty);
+
         builder.setView(layout);
         builder.setPositiveButton("Simpan Perubahan", null);
         builder.setNegativeButton("Batal", (d, w) -> d.cancel());
@@ -372,12 +374,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    int checkedId = rgCategory.getCheckedRadioButtonId();
-                    RadioButton selected = rgCategory.findViewById(checkedId);
-                    String chosenCategory = (selected != null && selected.getTag() != null)
-                            ? (String) selected.getTag()
-                            : SkillCategory.FUN;
-
+                    String chosenCategory = selectedCategory(rgCategory);
                     String chosenDifficulty = selectedDifficulty(rgDifficulty);
                     int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
                     int durationMinutes = durationForDifficulty(chosenDifficulty);
@@ -449,6 +446,51 @@ public class MainActivity extends AppCompatActivity {
         return rgDifficulty;
     }
 
+    private String selectedCategory(RadioGroup rgCategory) {
+        int checkedId = rgCategory.getCheckedRadioButtonId();
+        RadioButton selected = rgCategory.findViewById(checkedId);
+
+        return selected != null && selected.getTag() != null
+                ? (String) selected.getTag()
+                : SkillCategory.FUN;
+    }
+
+    private TextView createCustomSkillPreview() {
+        TextView preview = new TextView(this);
+        preview.setTextSize(13f);
+        preview.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        preview.setPadding(0, 20, 0, 4);
+        return preview;
+    }
+
+    private void bindCustomSkillPreview(
+            TextView preview,
+            RadioGroup rgCategory,
+            RadioGroup rgDifficulty
+    ) {
+        RadioGroup.OnCheckedChangeListener listener = (group, checkedId) ->
+                updateCustomSkillPreview(preview, rgCategory, rgDifficulty);
+
+        rgCategory.setOnCheckedChangeListener(listener);
+        rgDifficulty.setOnCheckedChangeListener(listener);
+        updateCustomSkillPreview(preview, rgCategory, rgDifficulty);
+    }
+
+    private void updateCustomSkillPreview(
+            TextView preview,
+            RadioGroup rgCategory,
+            RadioGroup rgDifficulty
+    ) {
+        String category = selectedCategory(rgCategory);
+        String difficulty = selectedDifficulty(rgDifficulty);
+        int xpReward = calculateCustomXp(category, difficulty);
+        int durationMinutes = durationForDifficulty(difficulty);
+
+        preview.setText(
+                "Reward: +" + xpReward + " XP - Timer: " + durationMinutes + " menit"
+        );
+    }
+
     private String selectedDifficulty(RadioGroup rgDifficulty) {
         int checkedId = rgDifficulty.getCheckedRadioButtonId();
         RadioButton selected = rgDifficulty.findViewById(checkedId);
@@ -478,6 +520,25 @@ public class MainActivity extends AppCompatActivity {
             return baseXp + 30;
         }
         return baseXp;
+    }
+
+    private String labelForCategory(String category) {
+        for (String[] item : CATEGORY_OPTIONS) {
+            if (item[1].equals(category)) {
+                return item[0];
+            }
+        }
+        return "Fun";
+    }
+
+    private String labelForDifficulty(String difficulty) {
+        if (Skill.EASY.equals(difficulty)) {
+            return "Easy";
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return "Hard";
+        }
+        return "Medium";
     }
 
     private void showManageCustomSkillsDialog() {
@@ -537,7 +598,15 @@ public class MainActivity extends AppCompatActivity {
         row.addView(title);
 
         TextView meta = new TextView(this);
-        meta.setText(skill.category.toUpperCase() + " - +" + skill.xp_reward + " XP");
+        int durationMinutes = skill.duration_minutes > 0
+                ? skill.duration_minutes
+                : durationForDifficulty(skill.difficulty);
+        meta.setText(
+                labelForCategory(skill.category)
+                        + " - " + labelForDifficulty(skill.difficulty)
+                        + " - " + durationMinutes + " menit"
+                        + " - +" + skill.xp_reward + " XP"
+        );
         meta.setTextSize(12f);
         meta.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         meta.setPadding(0, 4, 0, 8);
