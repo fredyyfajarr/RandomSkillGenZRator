@@ -12,8 +12,8 @@
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipChildren="false"
-        android:clipToPadding="false"
+        android:clipChildren="true"
+        android:clipToPadding="true"
         android:paddingBottom="80dp" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
