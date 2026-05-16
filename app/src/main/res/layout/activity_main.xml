@@ -16,6 +16,13 @@
         android:clipToPadding="false"
         android:paddingBottom="80dp" />
 
+    <FrameLayout
+        android:id="@+id/bottom_nav_scroll_mask"
+        android:layout_width="match_parent"
+        android:layout_height="112dp"
+        android:layout_gravity="bottom"
+        android:background="@color/bg_light" />
+
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
         style="@style/Widget.MaterialComponents.BottomAppBar"
