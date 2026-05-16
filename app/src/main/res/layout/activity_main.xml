@@ -16,13 +16,18 @@
         android:clipToPadding="false"
         android:paddingBottom="80dp" />
 
-    <FrameLayout
+    <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
+        style="@style/Widget.MaterialComponents.BottomAppBar"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_gravity="bottom"
-        android:background="@color/bottom_nav_bg"
-        android:elevation="16dp" />
+        app:backgroundTint="@color/bottom_nav_bg"
+        app:elevation="16dp"
+        app:fabAlignmentMode="center"
+        app:fabCradleMargin="12dp"
+        app:fabCradleRoundedCornerRadius="24dp"
+        app:fabCradleVerticalOffset="10dp" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -47,7 +52,6 @@
         android:id="@+id/fab_lightning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="Buka ZAP Booster"
         android:src="@drawable/ic_bolt"
         app:backgroundTint="@color/accent_yellow"
         app:elevation="16dp"
@@ -55,6 +59,6 @@
         app:layout_anchor="@id/bottom_app_bar"
         app:maxImageSize="32dp"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.GenZRator.Circle"
-        app:tint="@color/primary_dark" />
+        app:tint="@color/text_inverse" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
