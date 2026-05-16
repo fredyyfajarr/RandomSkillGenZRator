@@ -3,9 +3,9 @@
 
     <!-- Base Theme Colors -->
     <color name="bg_light">#0F172A</color>
-    <color name="surface_card">#243047</color>
-    <color name="surface_card_alt">#182236</color>
-    <color name="surface_card_deep">#0B1120</color>
+    <color name="surface_card">#1F2433</color>
+    <color name="surface_card_alt">#111827</color>
+    <color name="surface_card_deep">#020617</color>
 
     <!-- Text Colors -->
     <color name="text_primary">#F8FAFC</color>
@@ -31,7 +31,7 @@
     <color name="danger_red_soft">#FCA5A5</color>
 
     <!-- Navigation / Button -->
-    <color name="bottom_nav_bg">#182236</color>
+    <color name="bottom_nav_bg">#111827</color>
     <color name="bottom_nav_item">#94A3B8</color>
     <color name="bottom_nav_item_active">#FACC15</color>
 

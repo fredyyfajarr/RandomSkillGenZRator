@@ -3,8 +3,6 @@ package id.kelompok1.randomskillgen_zrator;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -201,9 +199,6 @@ public class MainActivity extends AppCompatActivity {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.layout_bottom_sheet_zap, null);
         bottomSheetDialog.setContentView(view);
-        if (bottomSheetDialog.getWindow() != null) {
-            bottomSheetDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        }
 
         TextView tvQuote = view.findViewById(R.id.tv_zap_quote);
         MaterialButton btnCustom = view.findViewById(R.id.btn_zap_custom_skill);
