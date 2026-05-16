@@ -45,8 +45,20 @@ public interface AppDao {
     @Query("SELECT * FROM Skill WHERE title = :title AND (firebase_uid IS NULL OR firebase_uid = :uid) LIMIT 1")
     Skill getSkillByTitleForUserOrGlobal(String title, String uid);
 
+    @Query("SELECT * FROM Skill WHERE firebase_uid = :uid AND is_custom = 1 ORDER BY title ASC")
+    List<Skill> getCustomSkillsForUser(String uid);
+
     @Insert
     void insertSkill(Skill skill);
+
+    @Update
+    void updateSkill(Skill skill);
+
+    @Query("DELETE FROM Skill WHERE id = :skillId AND firebase_uid = :uid AND is_custom = 1")
+    void deleteCustomSkill(int skillId, String uid);
+
+    @Query("SELECT COUNT(*) FROM DailySkill WHERE skill_id = :skillId")
+    int getDailySkillUsageCount(int skillId);
 
     @Insert
     void insertAll(List<Skill> skills);

@@ -211,6 +211,30 @@ public class AppRepository {
         ));
     }
 
+    public List<Skill> getCustomSkillsForUser(String uid) {
+        return dao.getCustomSkillsForUser(uid);
+    }
+
+    public void updateCustomSkill(Skill skill, String title, String category, int xpReward) {
+        if (skill == null || !skill.is_custom || skill.firebase_uid == null) return;
+
+        skill.title = title;
+        skill.category = category;
+        skill.xp_reward = xpReward;
+        skill.difficulty = Skill.inferDifficulty(xpReward);
+        skill.duration_minutes = Skill.inferDuration(xpReward);
+        dao.updateSkill(skill);
+    }
+
+    public boolean deleteCustomSkillIfUnused(String uid, Skill skill) {
+        if (skill == null || !skill.is_custom || skill.firebase_uid == null) return false;
+        if (!skill.firebase_uid.equals(uid)) return false;
+        if (dao.getDailySkillUsageCount(skill.id) > 0) return false;
+
+        dao.deleteCustomSkill(skill.id, uid);
+        return true;
+    }
+
     public void addCustomSkill(String title, String category, int xpReward) {
         dao.insertSkill(new Skill(title, category, xpReward));
     }

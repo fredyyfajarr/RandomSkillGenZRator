@@ -68,4 +68,18 @@
         app:iconGravity="textStart"
         app:iconTint="@color/bg_light" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_manage_custom_skill"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/cinzel_semibold"
+        android:text="MANAGE CUSTOM CHALLENGE"
+        android:textColor="@color/accent_yellow"
+        android:textSize="14sp"
+        app:backgroundTint="@color/surface_card"
+        app:cornerRadius="8dp"
+        app:strokeColor="@color/accent_yellow"
+        app:strokeWidth="1dp" />
+
 </LinearLayout>

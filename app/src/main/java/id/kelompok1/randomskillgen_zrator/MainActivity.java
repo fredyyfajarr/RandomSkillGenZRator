@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,11 +24,15 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.List;
+
 import id.kelompok1.randomskillgen_zrator.database.AppRepository;
+import id.kelompok1.randomskillgen_zrator.database.Skill;
 import id.kelompok1.randomskillgen_zrator.database.SkillCategory;
 import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 
@@ -35,6 +40,13 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
     private AppRepository repo;
+
+    private static final String[][] CATEGORY_OPTIONS = {
+            {"Kesehatan", SkillCategory.HEALTH},
+            {"Produktif", SkillCategory.PRODUCTIVE},
+            {"Fun", SkillCategory.FUN},
+            {"Edukasi", SkillCategory.EDUCATION},
+    };
 
     private final ActivityResultLauncher<String> notifPermissionLauncher =
             registerForActivityResult(
@@ -181,8 +193,8 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetDialog.setContentView(view);
 
         TextView tvQuote = view.findViewById(R.id.tv_zap_quote);
-        com.google.android.material.button.MaterialButton btnCustom =
-                view.findViewById(R.id.btn_zap_custom_skill);
+        MaterialButton btnCustom = view.findViewById(R.id.btn_zap_custom_skill);
+        MaterialButton btnManage = view.findViewById(R.id.btn_manage_custom_skill);
 
         String[] quotes = {
                 "\"Jangan nunggu motivasi datang, mulai aja dulu! 🚀\"",
@@ -197,6 +209,11 @@ public class MainActivity extends AppCompatActivity {
         btnCustom.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             showCustomSkillDialog();
+        });
+
+        btnManage.setOnClickListener(v -> {
+            bottomSheetDialog.dismiss();
+            showManageCustomSkillsDialog();
         });
 
         bottomSheetDialog.show();
@@ -281,5 +298,201 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Batal", (d, w) -> d.cancel());
         builder.show();
+    }
+
+    private void showCustomSkillEditor(Skill existingSkill) {
+        if (existingSkill == null) {
+            showCustomSkillDialog();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Edit Challenge Custom");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(60, 40, 60, 20);
+
+        final EditText etTitle = new EditText(this);
+        etTitle.setHint("Masukkan skill, misal: Push up 20x");
+        etTitle.setText(existingSkill.title);
+        etTitle.setSelection(etTitle.getText().length());
+        layout.addView(etTitle);
+
+        TextView tvCatLabel = new TextView(this);
+        tvCatLabel.setText("Pilih Kategori:");
+        tvCatLabel.setTextSize(14f);
+        tvCatLabel.setPadding(0, 24, 0, 8);
+        layout.addView(tvCatLabel);
+
+        RadioGroup rgCategory = createCategoryRadioGroup(existingSkill.category);
+        layout.addView(rgCategory);
+
+        builder.setView(layout);
+        builder.setPositiveButton("Simpan Perubahan", null);
+        builder.setNegativeButton("Batal", (d, w) -> d.cancel());
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                    String title = etTitle.getText().toString().trim();
+                    String titleError = CustomSkillValidator.validateTitle(title);
+
+                    if (titleError != null) {
+                        Toast.makeText(this, titleError, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int checkedId = rgCategory.getCheckedRadioButtonId();
+                    RadioButton selected = rgCategory.findViewById(checkedId);
+                    String chosenCategory = (selected != null && selected.getTag() != null)
+                            ? (String) selected.getTag()
+                            : SkillCategory.FUN;
+
+                    int xpReward = SkillCategory.getXpForCategory(chosenCategory);
+                    repo.getExecutor().execute(() ->
+                            repo.updateCustomSkill(existingSkill, title, chosenCategory, xpReward)
+                    );
+
+                    Toast.makeText(
+                            this,
+                            "Challenge \"" + title + "\" diperbarui.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    dialog.dismiss();
+                })
+        );
+        dialog.show();
+    }
+
+    private RadioGroup createCategoryRadioGroup(String selectedCategory) {
+        RadioGroup rgCategory = new RadioGroup(this);
+        rgCategory.setOrientation(RadioGroup.VERTICAL);
+
+        for (String[] cat : CATEGORY_OPTIONS) {
+            RadioButton rb = new RadioButton(this);
+            rb.setText(cat[0]);
+            rb.setTag(cat[1]);
+            rb.setPadding(0, 8, 0, 8);
+            rgCategory.addView(rb);
+
+            if (cat[1].equals(selectedCategory)) {
+                rb.setChecked(true);
+            }
+        }
+
+        if (rgCategory.getCheckedRadioButtonId() == -1 && rgCategory.getChildCount() > 0) {
+            ((RadioButton) rgCategory.getChildAt(2)).setChecked(true);
+        }
+
+        return rgCategory;
+    }
+
+    private void showManageCustomSkillsDialog() {
+        FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fUser == null) {
+            Toast.makeText(this, "Kamu harus login dulu.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String uid = fUser.getUid();
+        repo.getExecutor().execute(() -> {
+            List<Skill> customSkills = repo.getCustomSkillsForUser(uid);
+            runOnUiThread(() -> renderCustomSkillManager(uid, customSkills));
+        });
+    }
+
+    private void renderCustomSkillManager(String uid, List<Skill> customSkills) {
+        if (customSkills == null || customSkills.isEmpty()) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Custom Challenge")
+                    .setMessage("Belum ada custom challenge. Buat challenge pertama dulu.")
+                    .setPositiveButton("Buat", (dialog, which) -> showCustomSkillDialog())
+                    .setNegativeButton("Tutup", null)
+                    .show();
+            return;
+        }
+
+        ScrollView scrollView = new ScrollView(this);
+        LinearLayout list = new LinearLayout(this);
+        list.setOrientation(LinearLayout.VERTICAL);
+        list.setPadding(32, 20, 32, 8);
+        scrollView.addView(list);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Kelola Custom Challenge")
+                .setView(scrollView)
+                .setPositiveButton("Tambah Baru", (d, w) -> showCustomSkillDialog())
+                .setNegativeButton("Tutup", null)
+                .create();
+
+        for (Skill skill : customSkills) {
+            list.addView(createCustomSkillRow(uid, skill, dialog));
+        }
+
+        dialog.show();
+    }
+
+    private View createCustomSkillRow(String uid, Skill skill, AlertDialog parentDialog) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setPadding(0, 10, 0, 18);
+
+        TextView title = new TextView(this);
+        title.setText(skill.title);
+        title.setTextSize(15f);
+        title.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        row.addView(title);
+
+        TextView meta = new TextView(this);
+        meta.setText(skill.category.toUpperCase() + " - +" + skill.xp_reward + " XP");
+        meta.setTextSize(12f);
+        meta.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        meta.setPadding(0, 4, 0, 8);
+        row.addView(meta);
+
+        LinearLayout actions = new LinearLayout(this);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+
+        MaterialButton edit = new MaterialButton(this);
+        edit.setText("Edit");
+        edit.setOnClickListener(v -> {
+            parentDialog.dismiss();
+            showCustomSkillEditor(skill);
+        });
+
+        MaterialButton delete = new MaterialButton(this);
+        delete.setText("Delete");
+        delete.setTextColor(ContextCompat.getColor(this, R.color.danger_red));
+        delete.setOnClickListener(v -> confirmDeleteCustomSkill(uid, skill, parentDialog));
+
+        actions.addView(edit, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        actions.addView(delete, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        row.addView(actions);
+
+        return row;
+    }
+
+    private void confirmDeleteCustomSkill(String uid, Skill skill, AlertDialog parentDialog) {
+        new AlertDialog.Builder(this)
+                .setTitle("Hapus Challenge?")
+                .setMessage("Challenge custom yang sudah pernah muncul di quest tidak akan dihapus agar history tetap aman.")
+                .setPositiveButton("Hapus", (dialog, which) -> repo.getExecutor().execute(() -> {
+                    boolean deleted = repo.deleteCustomSkillIfUnused(uid, skill);
+                    runOnUiThread(() -> {
+                        Toast.makeText(
+                                this,
+                                deleted
+                                        ? "Challenge \"" + skill.title + "\" dihapus."
+                                        : "Challenge ini sudah dipakai di quest, jadi tidak bisa dihapus.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        parentDialog.dismiss();
+                        showManageCustomSkillsDialog();
+                    });
+                }))
+                .setNegativeButton("Batal", null)
+                .show();
     }
 }
