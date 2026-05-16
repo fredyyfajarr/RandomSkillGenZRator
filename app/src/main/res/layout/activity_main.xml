@@ -23,11 +23,12 @@
         android:layout_height="70dp"
         android:layout_gravity="bottom"
         app:backgroundTint="@color/bottom_nav_bg"
-        app:elevation="16dp"
+        app:elevation="0dp"
         app:fabAlignmentMode="center"
         app:fabCradleMargin="12dp"
         app:fabCradleRoundedCornerRadius="24dp"
-        app:fabCradleVerticalOffset="10dp" />
+        app:fabCradleVerticalOffset="10dp"
+        app:hideOnScroll="false" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -54,7 +55,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_bolt"
         app:backgroundTint="@color/accent_yellow"
-        app:elevation="16dp"
+        app:elevation="6dp"
         app:fabCustomSize="64dp"
         app:layout_anchor="@id/bottom_app_bar"
         app:maxImageSize="32dp"
