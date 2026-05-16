@@ -141,6 +141,11 @@ public interface AppDao {
     @Query("SELECT COUNT(*) FROM DailySkill WHERE firebase_uid = :uid AND is_completed = 1")
     int getTotalCompletedQuestCount(String uid);
 
+    @Query("SELECT COALESCE(SUM(s.xp_reward), 0) " +
+            "FROM DailySkill ds INNER JOIN Skill s ON ds.skill_id = s.id " +
+            "WHERE ds.firebase_uid = :uid AND ds.is_completed = 1")
+    int getTotalRewardXp(String uid);
+
     @Query("SELECT COUNT(*) FROM DailySkill ds INNER JOIN Skill s ON ds.skill_id = s.id " +
             "WHERE ds.firebase_uid = :uid AND ds.is_completed = 1 AND s.category = :category")
     int getCompletedQuestCountByCategory(String uid, String category);

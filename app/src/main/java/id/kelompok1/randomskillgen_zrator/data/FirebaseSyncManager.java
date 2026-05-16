@@ -1,10 +1,15 @@
 package id.kelompok1.randomskillgen_zrator.data;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,6 +63,7 @@ public class FirebaseSyncManager {
     }
 
     private final FirebaseFirestore db;
+    private final Handler retryHandler = new Handler(Looper.getMainLooper());
 
     public FirebaseSyncManager() {
         this(FirebaseFirestore.getInstance());
@@ -125,13 +131,16 @@ public class FirebaseSyncManager {
 
         db.collection("users")
                 .document(uid)
-                .set(updates, com.google.firebase.firestore.SetOptions.merge())
+                .set(updates, SetOptions.merge())
                 .addOnSuccessListener(v -> {
                     if (callback != null) callback.onSuccess();
                 })
-                .addOnFailureListener(error -> {
-                    if (callback != null) callback.onFailure(error);
-                });
+                .addOnFailureListener(error -> retrySet(
+                        db.collection("users").document(uid),
+                        updates,
+                        callback,
+                        2
+                ));
     }
 
     public void saveDailyProgress(String uid, String date, int finishedCount) {
@@ -148,7 +157,16 @@ public class FirebaseSyncManager {
                 .document(uid)
                 .collection("daily_progress")
                 .document(date)
-                .set(data);
+                .set(data, SetOptions.merge())
+                .addOnFailureListener(error -> retrySet(
+                        db.collection("users")
+                                .document(uid)
+                                .collection("daily_progress")
+                                .document(date),
+                        data,
+                        null,
+                        2
+                ));
     }
 
     public void saveDailyQuest(String uid, DailySkill record, Skill skill, int slot) {
@@ -175,7 +193,42 @@ public class FirebaseSyncManager {
                 .document(uid)
                 .collection("daily_quests")
                 .document(record.date + "_" + slot)
-                .set(data);
+                .set(data, SetOptions.merge())
+                .addOnFailureListener(error -> retrySet(
+                        db.collection("users")
+                                .document(uid)
+                                .collection("daily_quests")
+                                .document(record.date + "_" + slot),
+                        data,
+                        null,
+                        2
+                ));
+    }
+
+    private void retrySet(
+            DocumentReference ref,
+            Map<String, Object> data,
+            @Nullable OperationCallback callback,
+            int attemptsLeft
+    ) {
+        if (attemptsLeft <= 0) {
+            if (callback != null) {
+                callback.onFailure(new IllegalStateException("Firestore write failed after retries."));
+            }
+            return;
+        }
+
+        long delayMillis = attemptsLeft == 2 ? 1200L : 3000L;
+        retryHandler.postDelayed(() ->
+                        ref.set(data, SetOptions.merge())
+                                .addOnSuccessListener(v -> {
+                                    if (callback != null) callback.onSuccess();
+                                })
+                                .addOnFailureListener(error ->
+                                        retrySet(ref, data, callback, attemptsLeft - 1)
+                                ),
+                delayMillis
+        );
     }
 
     public void resetTodayProgress(String uid, String today) {

@@ -394,74 +394,53 @@ public class AppRepository {
     public StatsResult getStatsForUser(String uid) {
         User user = dao.getUser(uid);
         int currentXp = user != null ? user.xp : 0;
+        int bestStreak = user != null ? user.best_streak : 0;
 
         Map<String, Integer> categoryCount = new HashMap<>();
+        String favoriteCategory = "Belum ada";
+        int favoriteCount = 0;
 
         List<CategoryCount> counts = dao.getCompletedQuestCountByCategoryForUser(uid);
         if (counts != null) {
             for (CategoryCount item : counts) {
                 if (item.category != null && item.count > 0) {
                     categoryCount.put(item.category, item.count);
+                    if (item.count > favoriteCount) {
+                        favoriteCategory = item.category;
+                        favoriteCount = item.count;
+                    }
                 }
             }
         }
 
         int totalCompleted = dao.getTotalCompletedQuestCount(uid);
-        return new StatsResult(totalCompleted, currentXp, categoryCount);
+        int totalRewardXp = dao.getTotalRewardXp(uid);
+        int averageXp = totalCompleted > 0 ? Math.round((float) totalRewardXp / totalCompleted) : 0;
+        return new StatsResult(
+                totalCompleted,
+                currentXp,
+                totalRewardXp,
+                bestStreak,
+                favoriteCategory,
+                favoriteCount,
+                averageXp,
+                categoryCount
+        );
     }
 
     public void seedDefaultAchievementsIfEmpty() {
         if (dao.getAchievementCount() > 0) return;
 
         List<Achievement> achievements = new ArrayList<>();
-
-        achievements.add(new Achievement(
-                "first_flame",
-                "First Flame",
-                "Selesaikan quest pertamamu.",
-                "🔥",
-                false
-        ));
-
-        achievements.add(new Achievement(
-                "triple_clear",
-                "Triple Clear",
-                "Selesaikan 3 quest total.",
-                "⚔️",
-                false
-        ));
-
-        achievements.add(new Achievement(
-                "healthy_soul",
-                "Healthy Soul",
-                "Selesaikan 5 quest kategori Kesehatan.",
-                "💪",
-                false
-        ));
-
-        achievements.add(new Achievement(
-                "productivity_demon",
-                "Productivity Demon",
-                "Selesaikan 5 quest kategori Produktif.",
-                "⚡",
-                false
-        ));
-
-        achievements.add(new Achievement(
-                "scholar",
-                "Scholar",
-                "Selesaikan 5 quest kategori Edukasi.",
-                "📚",
-                false
-        ));
-
-        achievements.add(new Achievement(
-                "fun_hunter",
-                "Fun Hunter",
-                "Selesaikan 5 quest kategori Fun.",
-                "🎮",
-                false
-        ));
+        for (AchievementRule rule : achievementRules()) {
+            achievements.add(new Achievement(
+                    rule.id,
+                    rule.title,
+                    rule.description,
+                    rule.icon,
+                    false
+            ));
+        }
 
         dao.insertAchievements(achievements);
     }
@@ -476,34 +455,9 @@ public class AppRepository {
 
         List<Achievement> newlyUnlocked = new ArrayList<>();
 
-        int totalCompleted = dao.getTotalCompletedQuestCount(uid);
-
-        maybeUnlock(newlyUnlocked, "first_flame", totalCompleted >= 1);
-        maybeUnlock(newlyUnlocked, "triple_clear", totalCompleted >= 3);
-
-        maybeUnlock(
-                newlyUnlocked,
-                "healthy_soul",
-                dao.getCompletedQuestCountByCategory(uid, SkillCategory.HEALTH) >= 5
-        );
-
-        maybeUnlock(
-                newlyUnlocked,
-                "productivity_demon",
-                dao.getCompletedQuestCountByCategory(uid, SkillCategory.PRODUCTIVE) >= 5
-        );
-
-        maybeUnlock(
-                newlyUnlocked,
-                "scholar",
-                dao.getCompletedQuestCountByCategory(uid, SkillCategory.EDUCATION) >= 5
-        );
-
-        maybeUnlock(
-                newlyUnlocked,
-                "fun_hunter",
-                dao.getCompletedQuestCountByCategory(uid, SkillCategory.FUN) >= 5
-        );
+        for (AchievementRule rule : achievementRules()) {
+            maybeUnlock(newlyUnlocked, rule.id, achievementCurrent(uid, rule) >= rule.target);
+        }
 
         return newlyUnlocked;
     }
@@ -524,20 +478,50 @@ public class AppRepository {
     public Map<String, AchievementProgress> getAchievementProgressMap(String uid) {
         Map<String, AchievementProgress> map = new HashMap<>();
 
-        int totalCompleted = dao.getTotalCompletedQuestCount(uid);
-        int health = dao.getCompletedQuestCountByCategory(uid, SkillCategory.HEALTH);
-        int productive = dao.getCompletedQuestCountByCategory(uid, SkillCategory.PRODUCTIVE);
-        int education = dao.getCompletedQuestCountByCategory(uid, SkillCategory.EDUCATION);
-        int fun = dao.getCompletedQuestCountByCategory(uid, SkillCategory.FUN);
-
-        map.put("first_flame", new AchievementProgress(Math.min(totalCompleted, 1), 1));
-        map.put("triple_clear", new AchievementProgress(Math.min(totalCompleted, 3), 3));
-        map.put("healthy_soul", new AchievementProgress(Math.min(health, 5), 5));
-        map.put("productivity_demon", new AchievementProgress(Math.min(productive, 5), 5));
-        map.put("scholar", new AchievementProgress(Math.min(education, 5), 5));
-        map.put("fun_hunter", new AchievementProgress(Math.min(fun, 5), 5));
+        for (AchievementRule rule : achievementRules()) {
+            map.put(
+                    rule.id,
+                    new AchievementProgress(Math.min(achievementCurrent(uid, rule), rule.target), rule.target)
+            );
+        }
 
         return map;
+    }
+
+    private int achievementCurrent(String uid, AchievementRule rule) {
+        if (rule.category == null) {
+            return dao.getTotalCompletedQuestCount(uid);
+        }
+        return dao.getCompletedQuestCountByCategory(uid, rule.category);
+    }
+
+    private List<AchievementRule> achievementRules() {
+        List<AchievementRule> rules = new ArrayList<>();
+        rules.add(new AchievementRule("first_flame", "First Flame", "Selesaikan quest pertamamu.", "🔥", 1, null));
+        rules.add(new AchievementRule("triple_clear", "Triple Clear", "Selesaikan 3 quest total.", "⚔️", 3, null));
+        rules.add(new AchievementRule("healthy_soul", "Healthy Soul", "Selesaikan 5 quest kategori Kesehatan.", "💪", 5, SkillCategory.HEALTH));
+        rules.add(new AchievementRule("productivity_demon", "Productivity Demon", "Selesaikan 5 quest kategori Produktif.", "⚡", 5, SkillCategory.PRODUCTIVE));
+        rules.add(new AchievementRule("scholar", "Scholar", "Selesaikan 5 quest kategori Edukasi.", "📚", 5, SkillCategory.EDUCATION));
+        rules.add(new AchievementRule("fun_hunter", "Fun Hunter", "Selesaikan 5 quest kategori Fun.", "🎮", 5, SkillCategory.FUN));
+        return rules;
+    }
+
+    private static class AchievementRule {
+        final String id;
+        final String title;
+        final String description;
+        final String icon;
+        final int target;
+        final String category;
+
+        AchievementRule(String id, String title, String description, String icon, int target, String category) {
+            this.id = id;
+            this.title = title;
+            this.description = description;
+            this.icon = icon;
+            this.target = target;
+            this.category = category;
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -556,11 +540,30 @@ public class AppRepository {
     public static class StatsResult {
         public final int totalCompleted;
         public final int totalXp;
+        public final int totalRewardXp;
+        public final int bestStreak;
+        public final String favoriteCategory;
+        public final int favoriteCategoryCount;
+        public final int averageXpPerQuest;
         public final Map<String, Integer> categoryCount;
 
-        public StatsResult(int totalCompleted, int totalXp, Map<String, Integer> categoryCount) {
+        public StatsResult(
+                int totalCompleted,
+                int totalXp,
+                int totalRewardXp,
+                int bestStreak,
+                String favoriteCategory,
+                int favoriteCategoryCount,
+                int averageXpPerQuest,
+                Map<String, Integer> categoryCount
+        ) {
             this.totalCompleted = totalCompleted;
             this.totalXp = totalXp;
+            this.totalRewardXp = totalRewardXp;
+            this.bestStreak = bestStreak;
+            this.favoriteCategory = favoriteCategory;
+            this.favoriteCategoryCount = favoriteCategoryCount;
+            this.averageXpPerQuest = averageXpPerQuest;
             this.categoryCount = categoryCount;
         }
     }

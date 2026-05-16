@@ -1,6 +1,7 @@
 package id.kelompok1.randomskillgen_zrator;
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -76,6 +77,7 @@ public class HomeFragment extends Fragment {
     private MaterialCardView cardSkeleton;
 
     private CountDownTimer questTimer;
+    private ObjectAnimator skeletonPulse;
     private int runningTimerRecordId = -1;
 
     private int lastRenderedXp = 0;
@@ -94,6 +96,7 @@ public class HomeFragment extends Fragment {
 
         bindViews(view);
         setupCardTouchAnimation();
+        startSkeletonPulse();
 
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
@@ -124,6 +127,7 @@ public class HomeFragment extends Fragment {
             questTimer.cancel();
             questTimer = null;
         }
+        stopSkeletonPulse();
         runningTimerRecordId = -1;
     }
 
@@ -218,8 +222,10 @@ public class HomeFragment extends Fragment {
 
         viewModel.getSyncState().observe(getViewLifecycleOwner(), this::updateSyncBadge);
 
-        viewModel.getShowSuccessDialogEvent().observe(getViewLifecycleOwner(), shouldShow -> {
-            if (!Boolean.TRUE.equals(shouldShow)) return;
+        viewModel.getShowSuccessDialogEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+            Integer gainedXp = event.getContentIfNotHandled();
+            if (gainedXp == null) return;
 
             playSfx();
             showLottie();
@@ -231,13 +237,11 @@ public class HomeFragment extends Fragment {
 
                 User u = viewModel.getUser().getValue();
                 if (u != null) {
-                    showSuccessDialog(viewModel.getLastGainedXp(), u.streak);
+                    showSuccessDialog(gainedXp, u.streak);
                 }
             };
 
             uiHandler.postDelayed(pendingShowDialog, 1500);
-
-            viewModel.resetSuccessDialogEvent();
         });
     }
 
@@ -414,8 +418,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void showSkillCard() {
+        stopSkeletonPulse();
         if (cardSkeleton != null) {
             cardSkeleton.setVisibility(View.GONE);
+            cardSkeleton.setAlpha(1f);
         }
 
         if (cardSkill != null) {
@@ -571,6 +577,22 @@ public class HomeFragment extends Fragment {
 
         if (btnSkipQuest != null) {
             btnSkipQuest.setVisibility(View.GONE);
+        }
+    }
+
+    private void startSkeletonPulse() {
+        if (cardSkeleton == null) return;
+        skeletonPulse = ObjectAnimator.ofFloat(cardSkeleton, "alpha", 0.55f, 1f);
+        skeletonPulse.setDuration(700);
+        skeletonPulse.setRepeatMode(ValueAnimator.REVERSE);
+        skeletonPulse.setRepeatCount(ValueAnimator.INFINITE);
+        skeletonPulse.start();
+    }
+
+    private void stopSkeletonPulse() {
+        if (skeletonPulse != null) {
+            skeletonPulse.cancel();
+            skeletonPulse = null;
         }
     }
 

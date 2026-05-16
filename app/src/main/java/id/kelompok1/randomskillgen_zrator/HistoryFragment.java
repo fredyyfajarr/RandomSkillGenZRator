@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -39,7 +40,9 @@ public class HistoryFragment extends Fragment {
     private RecyclerView     rvHistory;
     private HistoryAdapter   adapter;
     private LinearLayout     layoutEmpty;
+    private LinearLayout     layoutFilterChip;
     private TextView         tvEmptyHistory;
+    private TextView         tvActiveFilter;
 
     // Data lengkap yang sudah ter-load (untuk filter lokal tanpa query ulang)
     private List<DailySkill>    allCompletedQuests = new ArrayList<>();
@@ -54,12 +57,16 @@ public class HistoryFragment extends Fragment {
 
         rvHistory      = view.findViewById(R.id.rv_history);
         layoutEmpty    = view.findViewById(R.id.layout_empty_state);
+        layoutFilterChip = view.findViewById(R.id.layout_filter_chip);
         tvEmptyHistory = view.findViewById(R.id.tv_empty_history);
+        tvActiveFilter = view.findViewById(R.id.tv_active_filter);
         ImageView btnFilter = view.findViewById(R.id.btn_filter_date);
+        MaterialButton btnClearFilter = view.findViewById(R.id.btn_clear_filter);
 
         rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
 
         btnFilter.setOnClickListener(v -> showDatePickerFilter());
+        btnClearFilter.setOnClickListener(v -> clearDateFilter());
 
         loadHistoryData();
         return view;
@@ -87,6 +94,7 @@ public class HistoryFragment extends Fragment {
                 skillMap.clear();
                 skillMap.putAll(result.skillMap);
 
+                hideFilterChip();
                 renderList(allCompletedQuests);
             });
         });
@@ -172,6 +180,8 @@ public class HistoryFragment extends Fragment {
     }
 
     private void applyDateFilter(String date) {
+        showFilterChip(date);
+
         List<DailySkill> filtered = new ArrayList<>();
         for (DailySkill r : allCompletedQuests) {
             if (r.date.equals(date)) filtered.add(r);
@@ -190,5 +200,25 @@ public class HistoryFragment extends Fragment {
 
         adapter = new HistoryAdapter(filtered, skillMap, this::showQuestDetail);
         rvHistory.setAdapter(adapter);
+    }
+
+    private void clearDateFilter() {
+        hideFilterChip();
+        renderList(allCompletedQuests);
+    }
+
+    private void showFilterChip(String date) {
+        if (layoutFilterChip != null) {
+            layoutFilterChip.setVisibility(View.VISIBLE);
+        }
+        if (tvActiveFilter != null) {
+            tvActiveFilter.setText("Tanggal: " + date);
+        }
+    }
+
+    private void hideFilterChip() {
+        if (layoutFilterChip != null) {
+            layoutFilterChip.setVisibility(View.GONE);
+        }
     }
 }

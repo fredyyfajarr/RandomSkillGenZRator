@@ -23,6 +23,11 @@ public class StatsViewModel extends AndroidViewModel {
     public static class StatsData {
         public final int totalCompleted;
         public final int totalXp;
+        public final int totalRewardXp;
+        public final int bestStreak;
+        public final String favoriteCategory;
+        public final int favoriteCategoryCount;
+        public final int averageXpPerQuest;
         public final Map<String, Integer> categoryCount;
         public final List<Achievement> achievements;
         public final Map<String, AppRepository.AchievementProgress> achievementProgressMap;
@@ -30,12 +35,22 @@ public class StatsViewModel extends AndroidViewModel {
         StatsData(
                 int totalCompleted,
                 int totalXp,
+                int totalRewardXp,
+                int bestStreak,
+                String favoriteCategory,
+                int favoriteCategoryCount,
+                int averageXpPerQuest,
                 Map<String, Integer> categoryCount,
                 List<Achievement> achievements,
                 Map<String, AppRepository.AchievementProgress> achievementProgressMap
         ) {
             this.totalCompleted = totalCompleted;
             this.totalXp = totalXp;
+            this.totalRewardXp = totalRewardXp;
+            this.bestStreak = bestStreak;
+            this.favoriteCategory = favoriteCategory;
+            this.favoriteCategoryCount = favoriteCategoryCount;
+            this.averageXpPerQuest = averageXpPerQuest;
             this.categoryCount = categoryCount;
             this.achievements = achievements;
             this.achievementProgressMap = achievementProgressMap;
@@ -73,6 +88,11 @@ public class StatsViewModel extends AndroidViewModel {
             statsData.postValue(new StatsData(
                     result.totalCompleted,
                     result.totalXp,
+                    result.totalRewardXp,
+                    result.bestStreak,
+                    result.favoriteCategory,
+                    result.favoriteCategoryCount,
+                    result.averageXpPerQuest,
                     result.categoryCount,
                     achievements,
                     progressMap

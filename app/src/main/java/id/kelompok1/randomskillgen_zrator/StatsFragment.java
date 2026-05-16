@@ -38,6 +38,9 @@ public class StatsFragment extends Fragment {
     private PieChart pieChart;
     private TextView tvTotalQuest;
     private TextView tvTotalXp;
+    private TextView tvFavoriteCategory;
+    private TextView tvBestStreak;
+    private TextView tvAverageXp;
 
     private View layoutChartContainer;
     private View layoutEmptyStats;
@@ -55,6 +58,9 @@ public class StatsFragment extends Fragment {
         pieChart = view.findViewById(R.id.pie_chart_stats);
         tvTotalQuest = view.findViewById(R.id.tv_stats_total_quest);
         tvTotalXp = view.findViewById(R.id.tv_stats_total_xp);
+        tvFavoriteCategory = view.findViewById(R.id.tv_stats_favorite_category);
+        tvBestStreak = view.findViewById(R.id.tv_stats_best_streak);
+        tvAverageXp = view.findViewById(R.id.tv_stats_average_xp);
         layoutChartContainer = view.findViewById(R.id.layout_chart_container);
         layoutEmptyStats = view.findViewById(R.id.layout_empty_stats);
         layoutAchievements = view.findViewById(R.id.layout_achievements);
@@ -66,7 +72,8 @@ public class StatsFragment extends Fragment {
             if (data == null) return;
 
             tvTotalQuest.setText(String.valueOf(data.totalCompleted));
-            tvTotalXp.setText(String.valueOf(data.totalXp));
+            tvTotalXp.setText(String.valueOf(data.totalRewardXp));
+            renderInsights(data);
 
             renderAchievements(data.achievements, data.achievementProgressMap);
 
@@ -79,6 +86,23 @@ public class StatsFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void renderInsights(StatsViewModel.StatsData data) {
+        if (tvFavoriteCategory != null) {
+            String category = data.favoriteCategory != null ? data.favoriteCategory : "Belum ada";
+            tvFavoriteCategory.setText(
+                    "Kategori favorit: " + category + " (" + data.favoriteCategoryCount + " quest)"
+            );
+        }
+
+        if (tvBestStreak != null) {
+            tvBestStreak.setText("Best streak: " + data.bestStreak + " hari");
+        }
+
+        if (tvAverageXp != null) {
+            tvAverageXp.setText("Rata-rata reward: " + data.averageXpPerQuest + " XP / quest");
+        }
     }
 
     @Override

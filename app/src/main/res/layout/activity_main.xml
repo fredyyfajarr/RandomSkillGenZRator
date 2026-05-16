@@ -45,13 +45,14 @@
         app:itemIconTint="@color/bottom_nav_icon_selector"
         app:itemRippleColor="@android:color/transparent"
         app:itemTextColor="@color/bottom_nav_label_selector"
-        app:labelVisibilityMode="unlabeled"
+        app:labelVisibilityMode="selected"
         app:menu="@menu/bottom_nav_menu" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_lightning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:contentDescription="Buka ZAP Booster"
         android:src="@drawable/ic_bolt"
         app:backgroundTint="@color/accent_yellow"
         app:elevation="16dp"
@@ -59,6 +60,6 @@
         app:layout_anchor="@id/bottom_app_bar"
         app:maxImageSize="32dp"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.GenZRator.Circle"
-        app:tint="@color/text_inverse" />
+        app:tint="@color/primary_dark" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

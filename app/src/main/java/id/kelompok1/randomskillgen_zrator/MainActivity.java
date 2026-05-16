@@ -583,37 +583,61 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void renderCustomSkillManager(String uid, List<Skill> customSkills) {
-        if (customSkills == null || customSkills.isEmpty()) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Custom Challenge")
-                    .setMessage("Belum ada custom challenge. Buat challenge pertama dulu.")
-                    .setPositiveButton("Buat", (dialog, which) -> showCustomSkillDialog())
-                    .setNegativeButton("Tutup", null)
-                    .show();
-            return;
-        }
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(32, 28, 32, 24);
+
+        TextView title = new TextView(this);
+        title.setText("Custom Challenge");
+        title.setTextSize(20f);
+        title.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        root.addView(title);
+
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Kelola challenge buatanmu untuk masuk ke pool quest harian.");
+        subtitle.setTextSize(13f);
+        subtitle.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        subtitle.setPadding(0, 6, 0, 18);
+        root.addView(subtitle);
 
         ScrollView scrollView = new ScrollView(this);
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
-        list.setPadding(32, 20, 32, 8);
+        list.setPadding(0, 0, 0, 8);
         scrollView.addView(list);
+        root.addView(scrollView, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Kelola Custom Challenge")
-                .setView(scrollView)
-                .setPositiveButton("Tambah Baru", (d, w) -> showCustomSkillDialog())
-                .setNegativeButton("Tutup", null)
-                .create();
-
-        for (Skill skill : customSkills) {
-            list.addView(createCustomSkillRow(uid, skill, dialog));
+        if (customSkills == null || customSkills.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("Belum ada custom challenge. Buat challenge pertama dulu.");
+            empty.setTextSize(14f);
+            empty.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            empty.setPadding(0, 20, 0, 24);
+            list.addView(empty);
+        } else {
+            for (Skill skill : customSkills) {
+                list.addView(createCustomSkillRow(uid, skill, dialog));
+            }
         }
 
+        MaterialButton add = new MaterialButton(this);
+        add.setText("Tambah Baru");
+        add.setTextColor(ContextCompat.getColor(this, R.color.primary_dark));
+        add.setOnClickListener(v -> {
+            dialog.dismiss();
+            showCustomSkillDialog();
+        });
+        root.addView(add);
+
+        dialog.setContentView(root);
         dialog.show();
     }
 
-    private View createCustomSkillRow(String uid, Skill skill, AlertDialog parentDialog) {
+    private View createCustomSkillRow(String uid, Skill skill, BottomSheetDialog parentDialog) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.VERTICAL);
         row.setPadding(0, 10, 0, 18);
@@ -661,7 +685,7 @@ public class MainActivity extends AppCompatActivity {
         return row;
     }
 
-    private void confirmDeleteCustomSkill(String uid, Skill skill, AlertDialog parentDialog) {
+    private void confirmDeleteCustomSkill(String uid, Skill skill, BottomSheetDialog parentDialog) {
         new AlertDialog.Builder(this)
                 .setTitle("Hapus Challenge?")
                 .setMessage("Challenge custom yang sudah pernah muncul di quest tidak akan dihapus agar history tetap aman.")
