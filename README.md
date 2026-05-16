@@ -11,6 +11,16 @@ Daily quest gamification app built with Android Java, Firebase Authentication, F
 
 The app is offline-first: Room is the source used by UI, and Firestore sync is best-effort. If cloud reads fail, local data should still load.
 
+## Custom Challenge Rules
+
+- Users can create up to 30 custom challenges per account.
+- Custom challenge titles are normalized, trimmed, and checked case-insensitively to avoid duplicates.
+- Difficulty controls timer and XP:
+  - Easy: 1 minute, category XP minus 20, minimum 20 XP.
+  - Medium: 3 minutes, category XP.
+  - Hard: 5 minutes, category XP plus 30.
+- Cloud-restored custom challenge values are sanitized before being written to Room.
+
 ## Firebase Security Notes
 
 For a public repository, avoid committing a real `app/google-services.json`. Keep it local or provide a sanitized sample, and restrict Firebase API keys in Google Cloud.
@@ -27,3 +37,4 @@ match /users/{userId} {
 ```
 
 Do not store auth tokens, raw evidence photos/videos, or sensitive profile data in Firestore.
+Keep Firestore documents scoped under `/users/{uid}` and validate client-side data again on the server/rules side for production releases.

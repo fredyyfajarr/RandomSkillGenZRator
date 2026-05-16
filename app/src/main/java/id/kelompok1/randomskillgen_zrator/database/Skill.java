@@ -3,9 +3,16 @@ package id.kelompok1.randomskillgen_zrator.database;
 import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "Skill")
+@Entity(
+        tableName = "Skill",
+        indices = {
+                @Index(value = {"firebase_uid", "is_custom"}),
+                @Index(value = {"firebase_uid", "title"})
+        }
+)
 public class Skill {
 
     public static final String EASY = "Easy";
@@ -88,5 +95,18 @@ public class Skill {
         if (xpReward <= 30) return 1;
         if (xpReward <= 60) return 3;
         return 5;
+    }
+
+    public static String normalizeDifficulty(@Nullable String difficulty) {
+        if (EASY.equals(difficulty)) return EASY;
+        if (HARD.equals(difficulty)) return HARD;
+        return MEDIUM;
+    }
+
+    public static int normalizeDuration(int durationMinutes, String difficulty) {
+        if (durationMinutes >= 1 && durationMinutes <= 15) return durationMinutes;
+        if (EASY.equals(difficulty)) return 1;
+        if (HARD.equals(difficulty)) return 5;
+        return 3;
     }
 }

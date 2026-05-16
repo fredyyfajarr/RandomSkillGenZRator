@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import id.kelompok1.randomskillgen_zrator.data.FirebaseSyncManager;
+import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 import id.kelompok1.randomskillgen_zrator.domain.StreakCalculator;
 
 public class AppRepository {
@@ -200,6 +201,9 @@ public class AppRepository {
     }
 
     public void addCustomSkill(String uid, String title, String category, int xpReward) {
+        title = CustomSkillValidator.normalizeTitle(title);
+        category = SkillCategory.normalize(category);
+        xpReward = Math.max(20, Math.min(150, xpReward));
         dao.insertSkill(new Skill(
                 title,
                 category,
@@ -219,6 +223,11 @@ public class AppRepository {
             String difficulty,
             int durationMinutes
     ) {
+        title = CustomSkillValidator.normalizeTitle(title);
+        category = SkillCategory.normalize(category);
+        difficulty = Skill.normalizeDifficulty(difficulty);
+        xpReward = Math.max(20, Math.min(150, xpReward));
+        durationMinutes = Skill.normalizeDuration(durationMinutes, difficulty);
         dao.insertSkill(new Skill(
                 title,
                 category,
@@ -232,6 +241,10 @@ public class AppRepository {
 
     public List<Skill> getCustomSkillsForUser(String uid) {
         return dao.getCustomSkillsForUser(uid);
+    }
+
+    public int getCustomSkillCountForUser(String uid) {
+        return dao.getCustomSkillCountForUser(uid);
     }
 
     public boolean isCustomSkillTitleTaken(String uid, String title, int excludedSkillId) {
@@ -249,11 +262,12 @@ public class AppRepository {
     ) {
         if (skill == null || !skill.is_custom || skill.firebase_uid == null) return;
 
-        skill.title = title;
-        skill.category = category;
-        skill.xp_reward = xpReward;
-        skill.difficulty = difficulty;
-        skill.duration_minutes = durationMinutes;
+        String normalizedDifficulty = Skill.normalizeDifficulty(difficulty);
+        skill.title = CustomSkillValidator.normalizeTitle(title);
+        skill.category = SkillCategory.normalize(category);
+        skill.xp_reward = Math.max(20, Math.min(150, xpReward));
+        skill.difficulty = normalizedDifficulty;
+        skill.duration_minutes = Skill.normalizeDuration(durationMinutes, normalizedDifficulty);
         dao.updateSkill(skill);
     }
 

@@ -38,6 +38,8 @@ import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MAX_CUSTOM_SKILLS = 30;
+
     private BottomNavigationView bottomNav;
     private AppRepository repo;
 
@@ -221,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showCustomSkillDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Buat Challenge Custom 🎯");
+        builder.setTitle("Buat Challenge Custom");
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -237,29 +239,11 @@ public class MainActivity extends AppCompatActivity {
         tvCatLabel.setPadding(0, 24, 0, 8);
         layout.addView(tvCatLabel);
 
-        RadioGroup rgCategory = new RadioGroup(this);
-        rgCategory.setOrientation(RadioGroup.VERTICAL);
-
-        String[][] categories = {
-                {"🏃 Kesehatan", SkillCategory.HEALTH},
-                {"⚡ Produktif", SkillCategory.PRODUCTIVE},
-                {"🎮 Fun", SkillCategory.FUN},
-                {"📚 Edukasi", SkillCategory.EDUCATION},
-        };
-
-        for (String[] cat : categories) {
-            RadioButton rb = new RadioButton(this);
-            rb.setText(cat[0]);
-            rb.setTag(cat[1]);
-            rb.setPadding(0, 8, 0, 8);
-            rgCategory.addView(rb);
-        }
-
-        ((RadioButton) rgCategory.getChildAt(2)).setChecked(true);
+        RadioGroup rgCategory = createCategoryRadioGroup(SkillCategory.FUN);
         layout.addView(rgCategory);
 
         TextView tvDifficultyLabel = new TextView(this);
-        tvDifficultyLabel.setText("Pilih Difficulty:");
+        tvDifficultyLabel.setText("Pilih Tingkat Kesulitan:");
         tvDifficultyLabel.setTextSize(14f);
         tvDifficultyLabel.setPadding(0, 24, 0, 8);
         layout.addView(tvDifficultyLabel);
@@ -278,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface ->
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-            String title = etTitle.getText().toString().trim();
+            String title = CustomSkillValidator.normalizeTitle(etTitle.getText().toString());
             String titleError = CustomSkillValidator.validateTitle(title);
 
             if (titleError != null) {
@@ -299,6 +283,15 @@ public class MainActivity extends AppCompatActivity {
             String uid = fUser.getUid();
 
             repo.getExecutor().execute(() -> {
+                if (repo.getCustomSkillCountForUser(uid) >= MAX_CUSTOM_SKILLS) {
+                    runOnUiThread(() -> Toast.makeText(
+                            this,
+                            "Maksimal " + MAX_CUSTOM_SKILLS + " custom challenge dulu.",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                    return;
+                }
+
                 if (repo.isCustomSkillTitleTaken(uid, title, 0)) {
                     runOnUiThread(() -> Toast.makeText(
                             this,
@@ -360,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(rgCategory);
 
         TextView tvDifficultyLabel = new TextView(this);
-        tvDifficultyLabel.setText("Pilih Difficulty:");
+        tvDifficultyLabel.setText("Pilih Tingkat Kesulitan:");
         tvDifficultyLabel.setTextSize(14f);
         tvDifficultyLabel.setPadding(0, 24, 0, 8);
         layout.addView(tvDifficultyLabel);
@@ -381,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface ->
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    String title = etTitle.getText().toString().trim();
+                    String title = CustomSkillValidator.normalizeTitle(etTitle.getText().toString());
                     String titleError = CustomSkillValidator.validateTitle(title);
 
                     if (titleError != null) {
@@ -657,7 +650,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         MaterialButton delete = new MaterialButton(this);
-        delete.setText("Delete");
+        delete.setText("Hapus");
         delete.setTextColor(ContextCompat.getColor(this, R.color.danger_red));
         delete.setOnClickListener(v -> confirmDeleteCustomSkill(uid, skill, parentDialog));
 
