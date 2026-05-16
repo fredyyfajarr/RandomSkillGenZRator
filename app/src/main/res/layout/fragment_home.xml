@@ -262,6 +262,17 @@
                         android:textColor="@color/text_muted"
                         android:textSize="13sp" />
 
+                    <ProgressBar
+                        android:id="@+id/pb_daily_progress"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="12dp"
+                        android:backgroundTint="@color/surface_card_alt"
+                        android:max="3"
+                        android:progress="0"
+                        android:progressTint="@color/accent_yellow" />
+
                     <TextView
                         android:id="@+id/tv_skill_category_label"
                         android:layout_width="wrap_content"
@@ -313,6 +324,17 @@
                         android:textSize="24sp"
                         android:textStyle="bold" />
 
+                    <TextView
+                        android:id="@+id/tv_quest_hint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:fontFamily="@font/poppins_regular"
+                        android:gravity="center"
+                        android:text="Start quest untuk mulai timer."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_skip_quest"
                         android:layout_width="match_parent"
@@ -335,7 +357,7 @@
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/poppins_semibold"
                         android:text="Start Quest"
-                        android:textColor="@color/text_inverse"
+                        android:textColor="@color/primary_dark"
                         android:textSize="16sp"
                         app:backgroundTint="@color/accent_yellow"
                         app:cornerRadius="14dp" />

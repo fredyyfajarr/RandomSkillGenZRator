@@ -55,11 +55,14 @@ public class HomeFragment extends Fragment {
     private TextView tvDailyQuote;
     private TextView tvTierLabel;
     private TextView tvSkillCategoryLabel;
+    private TextView tvSkillMeta;
     private TextView tvSyncBadge;
     private TextView tvQuestTimer;
+    private TextView tvQuestHint;
     private TextView tvQuestProgress;
 
     private ProgressBar pbXp;
+    private ProgressBar pbDailyProgress;
 
     private MaterialButton btnDone;
     private MaterialButton btnSkipQuest;
@@ -127,11 +130,13 @@ public class HomeFragment extends Fragment {
     private void bindViews(View view) {
         tvSkillTitle = view.findViewById(R.id.tv_skill_title);
         tvSkillCategoryLabel = view.findViewById(R.id.tv_skill_category_label);
+        tvSkillMeta = view.findViewById(R.id.tv_skill_meta);
         btnDone = view.findViewById(R.id.btn_done);
         btnSkipQuest = view.findViewById(R.id.btn_skip_quest);
 
         tvLevel = view.findViewById(R.id.tv_level);
         pbXp = view.findViewById(R.id.pb_xp);
+        pbDailyProgress = view.findViewById(R.id.pb_daily_progress);
         tvXp = view.findViewById(R.id.tv_xp_text);
         tvStreak = view.findViewById(R.id.tv_streak_days);
         tvTierLabel = view.findViewById(R.id.tv_tier_label);
@@ -143,6 +148,7 @@ public class HomeFragment extends Fragment {
         tvDailyQuote = view.findViewById(R.id.tv_daily_quote);
         tvSyncBadge = view.findViewById(R.id.tv_sync_badge);
         tvQuestTimer = view.findViewById(R.id.tv_quest_timer);
+        tvQuestHint = view.findViewById(R.id.tv_quest_hint);
 
         lottieSuccess = view.findViewById(R.id.lottie_success);
 
@@ -419,6 +425,9 @@ public class HomeFragment extends Fragment {
 
     private void updateQuestProgressIndicator(int count) {
         if (tvQuestProgress == null) return;
+        if (pbDailyProgress != null) {
+            pbDailyProgress.setProgress(Math.min(Math.max(count, 0), 3));
+        }
         if (renderDotQuestProgress(count)) return;
 
         int questNumber = Math.min(count + 1, 3);
@@ -465,6 +474,7 @@ public class HomeFragment extends Fragment {
             if (tvQuestTimer != null) {
                 tvQuestTimer.setText("Done");
             }
+            setQuestHint("Semua slot quest hari ini sudah terpakai.");
 
             if (btnSkipQuest != null) {
                 btnSkipQuest.setVisibility(View.GONE);
@@ -493,6 +503,9 @@ public class HomeFragment extends Fragment {
             if (tvQuestTimer != null) {
                 tvQuestTimer.setText("Completed");
             }
+            setQuestHint(count >= 3
+                    ? "Semua quest hari ini selesai. Datang lagi besok."
+                    : "Quest berikutnya bisa kamu lanjut kapan saja hari ini.");
 
             if (btnSkipQuest != null) {
                 btnSkipQuest.setVisibility(View.GONE);
@@ -508,6 +521,7 @@ public class HomeFragment extends Fragment {
             if (tvQuestTimer != null) {
                 tvQuestTimer.setText("Skipped");
             }
+            setQuestHint("Slot harian tetap terpakai, tapi XP tidak bertambah.");
 
             if (btnSkipQuest != null) {
                 btnSkipQuest.setVisibility(View.GONE);
@@ -523,6 +537,7 @@ public class HomeFragment extends Fragment {
             if (btnSkipQuest != null) {
                 btnSkipQuest.setVisibility(View.VISIBLE);
             }
+            setQuestHint("Timer tetap valid meski aplikasi ditutup.");
 
             if (questTimer == null || runningTimerRecordId != record.id) {
                 startQuestTimer();
@@ -537,6 +552,7 @@ public class HomeFragment extends Fragment {
             if (tvQuestTimer != null) {
                 tvQuestTimer.setText("Ready!");
             }
+            setQuestHint("Konfirmasi setelah quest benar-benar dilakukan.");
 
             if (btnSkipQuest != null) {
                 btnSkipQuest.setVisibility(View.GONE);
@@ -551,9 +567,16 @@ public class HomeFragment extends Fragment {
         if (tvQuestTimer != null) {
             tvQuestTimer.setText("Selesaikan kapan saja hari ini");
         }
+        setQuestHint("Start quest untuk mulai timer dan unlock reward.");
 
         if (btnSkipQuest != null) {
             btnSkipQuest.setVisibility(View.GONE);
+        }
+    }
+
+    private void setQuestHint(String hint) {
+        if (tvQuestHint != null) {
+            tvQuestHint.setText(hint);
         }
     }
 
@@ -618,7 +641,17 @@ public class HomeFragment extends Fragment {
 
         if (tvSkillCategoryLabel != null) {
             tvSkillCategoryLabel.setTextColor(resolvedColor);
-            tvSkillCategoryLabel.setText(skill.category.toUpperCase() + " SKILL");
+            tvSkillCategoryLabel.setText(
+                    (skill.is_custom ? "CUSTOM " : "") + skill.category.toUpperCase() + " SKILL"
+            );
+        }
+
+        if (tvSkillMeta != null) {
+            String difficulty = Skill.normalizeDifficulty(skill.difficulty);
+            int duration = Skill.normalizeDuration(skill.duration_minutes, difficulty);
+            tvSkillMeta.setText(
+                    "+" + skill.xp_reward + " XP - " + difficulty + " - " + duration + " menit"
+            );
         }
     }
 
