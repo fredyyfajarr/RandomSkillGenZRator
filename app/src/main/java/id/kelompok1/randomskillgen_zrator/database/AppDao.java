@@ -48,6 +48,11 @@ public interface AppDao {
     @Query("SELECT * FROM Skill WHERE firebase_uid = :uid AND is_custom = 1 ORDER BY title ASC")
     List<Skill> getCustomSkillsForUser(String uid);
 
+    @Query("SELECT * FROM Skill " +
+            "WHERE firebase_uid = :uid AND is_custom = 1 " +
+            "AND LOWER(TRIM(title)) = LOWER(TRIM(:title)) LIMIT 1")
+    Skill getCustomSkillByTitleForUser(String uid, String title);
+
     @Insert
     void insertSkill(Skill skill);
 

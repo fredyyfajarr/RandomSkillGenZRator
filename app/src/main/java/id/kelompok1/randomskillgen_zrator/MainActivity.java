@@ -272,8 +272,12 @@ public class MainActivity extends AppCompatActivity {
         bindCustomSkillPreview(tvPreview, rgCategory, rgDifficulty);
 
         builder.setView(layout);
+        builder.setPositiveButton("Simpan", null);
+        builder.setNegativeButton("Batal", (d, w) -> d.cancel());
 
-        builder.setPositiveButton("Simpan", (dialog, which) -> {
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             String title = etTitle.getText().toString().trim();
             String titleError = CustomSkillValidator.validateTitle(title);
 
@@ -294,7 +298,16 @@ public class MainActivity extends AppCompatActivity {
             int durationMinutes = durationForDifficulty(chosenDifficulty);
             String uid = fUser.getUid();
 
-            repo.getExecutor().execute(() ->
+            repo.getExecutor().execute(() -> {
+                if (repo.isCustomSkillTitleTaken(uid, title, 0)) {
+                    runOnUiThread(() -> Toast.makeText(
+                            this,
+                            "Challenge dengan judul itu sudah ada.",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                    return;
+                }
+
                     repo.addCustomSkill(
                             uid,
                             title,
@@ -302,18 +315,20 @@ public class MainActivity extends AppCompatActivity {
                             xpReward,
                             chosenDifficulty,
                             durationMinutes
-                    )
-            );
+                    );
 
-            Toast.makeText(
-                    this,
-                    "Challenge \"" + title + "\" ditambahkan ke pool pribadimu!",
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
-
-        builder.setNegativeButton("Batal", (d, w) -> d.cancel());
-        builder.show();
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            this,
+                            "Challenge \"" + title + "\" ditambahkan ke pool pribadimu!",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    dialog.dismiss();
+                    showManageCustomSkillsDialog();
+                });
+            });
+        }));
+        dialog.show();
     }
 
     private void showCustomSkillEditor(Skill existingSkill) {
@@ -378,7 +393,23 @@ public class MainActivity extends AppCompatActivity {
                     String chosenDifficulty = selectedDifficulty(rgDifficulty);
                     int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
                     int durationMinutes = durationForDifficulty(chosenDifficulty);
-                    repo.getExecutor().execute(() ->
+                    FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (fUser == null) {
+                        Toast.makeText(this, "Kamu harus login dulu.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String uid = fUser.getUid();
+                    repo.getExecutor().execute(() -> {
+                        if (repo.isCustomSkillTitleTaken(uid, title, existingSkill.id)) {
+                            runOnUiThread(() -> Toast.makeText(
+                                    this,
+                                    "Challenge dengan judul itu sudah ada.",
+                                    Toast.LENGTH_SHORT
+                            ).show());
+                            return;
+                        }
+
                             repo.updateCustomSkill(
                                     existingSkill,
                                     title,
@@ -386,15 +417,18 @@ public class MainActivity extends AppCompatActivity {
                                     xpReward,
                                     chosenDifficulty,
                                     durationMinutes
-                            )
-                    );
+                            );
 
-                    Toast.makeText(
-                            this,
-                            "Challenge \"" + title + "\" diperbarui.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                    dialog.dismiss();
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                    this,
+                                    "Challenge \"" + title + "\" diperbarui.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                            dialog.dismiss();
+                            showManageCustomSkillsDialog();
+                        });
+                    });
                 })
         );
         dialog.show();

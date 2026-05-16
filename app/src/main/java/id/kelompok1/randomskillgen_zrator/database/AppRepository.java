@@ -234,6 +234,11 @@ public class AppRepository {
         return dao.getCustomSkillsForUser(uid);
     }
 
+    public boolean isCustomSkillTitleTaken(String uid, String title, int excludedSkillId) {
+        Skill existing = dao.getCustomSkillByTitleForUser(uid, title);
+        return existing != null && existing.id != excludedSkillId;
+    }
+
     public void updateCustomSkill(
             Skill skill,
             String title,
