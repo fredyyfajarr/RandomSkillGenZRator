@@ -7,376 +7,393 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:paddingBottom="120dp">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="ifContentScrolls">
 
             <LinearLayout
-                android:id="@+id/layout_header"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:contentDescription="Logo Random Skill Gen-ZRator"
-                    android:src="@drawable/logo_genzrator" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:fontFamily="@font/cinzel_semibold"
-                    android:lineSpacingExtra="-4dp"
-                    android:text="Random Skill\nGen-ZRator"
-                    android:textColor="@color/accent_yellow"
-                    android:textSize="20sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/layout_user_stats"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/iv_avatar"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
-                    android:background="@drawable/bg_circle"
-                    android:backgroundTint="@color/surface_card_alt"
-                    android:contentDescription="Foto profil pengguna"
-                    android:padding="0dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_custom_profile" />
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="24dp">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/layout_header"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="Logo Random Skill Gen-ZRator"
+                        android:src="@drawable/logo_genzrator" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="@font/cinzel_semibold"
+                        android:lineSpacingExtra="-4dp"
+                        android:text="Random Skill\nGen-ZRator"
+                        android:textColor="@color/accent_yellow"
+                        android:textSize="20sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/layout_user_stats"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/iv_avatar"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/surface_card_alt"
+                        android:contentDescription="Foto profil pengguna"
+                        android:padding="0dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_custom_profile" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tv_level"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/cinzel_semibold"
+                                android:text="Lv. 1"
+                                android:textColor="@color/accent_yellow"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/tv_tier_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:fontFamily="@font/cinzel_regular"
+                                android:text="Novice"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ProgressBar
+                            android:id="@+id/pb_xp"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="8dp"
+                            android:layout_marginTop="4dp"
+                            android:backgroundTint="@color/surface_card_alt"
+                            android:progress="0"
+                            android:progressTint="@color/accent_yellow" />
+
+                        <TextView
+                            android:id="@+id/tv_xp_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="@font/cinzel_regular"
+                            android:text="0 / 100 XP"
+                            android:textColor="@color/text_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/cinzel_regular"
+                            android:text="Streak"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_streak_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="-4dp"
+                            android:fontFamily="@font/cinzel_regular"
+                            android:text="0"
+                            android:textColor="@color/accent_yellow"
+                            android:textSize="22sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="-6dp"
+                            android:fontFamily="@font/cinzel_regular"
+                            android:text="days"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_daily_quote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:fontFamily="@font/cinzel_regular"
+                    android:text="💡 Quote hari ini:\nLoading motivasi..."
+                    android:textAlignment="center"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/tv_sync_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_sync_badge"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:paddingStart="14dp"
+                    android:paddingTop="7dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="7dp"
+                    android:text="☁ Cloud ready"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_skeleton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="36dp"
+                    android:visibility="visible"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="@color/gray_default"
+                    app:strokeWidth="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <View
+                            android:layout_width="120dp"
+                            android:layout_height="14dp"
+                            android:layout_marginBottom="20dp"
+                            android:background="@color/surface_card_alt" />
+
+                        <View
+                            android:layout_width="220dp"
+                            android:layout_height="24dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="@color/surface_card_alt" />
+
+                        <View
+                            android:layout_width="160dp"
+                            android:layout_height="24dp"
+                            android:layout_marginBottom="32dp"
+                            android:background="@color/surface_card_alt" />
+
+                        <View
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_marginBottom="32dp"
+                            android:background="@color/surface_card_alt" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:background="@color/surface_card_alt" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_skill"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="36dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="6dp"
+                    app:strokeColor="@color/gray_default"
+                    app:strokeWidth="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
                         <TextView
-                            android:id="@+id/tv_level"
+                            android:id="@+id/tv_quest_progress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/cinzel_semibold"
-                            android:text="Lv. 1"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="● ○ ○   Quest 1/3"
+                            android:textColor="@color/text_muted"
+                            android:textSize="13sp" />
+
+                        <ProgressBar
+                            android:id="@+id/pb_daily_progress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="8dp"
+                            android:layout_marginTop="12dp"
+                            android:backgroundTint="@color/surface_card_alt"
+                            android:max="3"
+                            android:progress="0"
+                            android:progressTint="@color/accent_yellow" />
+
+                        <TextView
+                            android:id="@+id/tv_skill_category_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:letterSpacing="0.2"
+                            android:text="SKILL HARI INI"
                             android:textColor="@color/accent_yellow"
                             android:textSize="14sp" />
 
                         <TextView
-                            android:id="@+id/tv_tier_label"
+                            android:id="@+id/tv_skill_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:gravity="center"
+                            android:text=""
+                            android:textColor="@color/text_primary"
+                            android:textSize="24sp" />
+
+                        <TextView
+                            android:id="@+id/tv_skill_meta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:fontFamily="@font/cinzel_regular"
-                            android:text="Novice"
+                            android:layout_marginTop="10dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="+50 XP • Medium • ±5 menit"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
+
+                        <ImageView
+                            android:id="@+id/iv_skill_illustration"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_marginTop="24dp"
+                            android:contentDescription="Ilustrasi kategori quest"
+                            tools:src="@android:drawable/ic_menu_gallery" />
+
+                        <TextView
+                            android:id="@+id/tv_quest_timer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="24dp"
+                            android:fontFamily="@font/cinzel_semibold"
+                            android:gravity="center"
+                            android:text="Selesaikan kapan saja hari ini"
+                            android:textColor="@color/accent_yellow"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_quest_hint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:gravity="center"
+                            android:text="Start quest untuk mulai timer."
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_skip_quest"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="14dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Skip Quest"
+                            android:textColor="@color/danger_red_soft"
+                            android:textSize="13sp"
+                            android:visibility="gone"
+                            app:backgroundTint="@color/surface_card_alt"
+                            app:cornerRadius="14dp"
+                            app:strokeColor="@color/danger_red"
+                            app:strokeWidth="1dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_done"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:layout_marginTop="16dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Start Quest"
+                            android:textColor="@color/primary_dark"
+                            android:textSize="16sp"
+                            app:backgroundTint="@color/accent_yellow"
+                            app:cornerRadius="14dp" />
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <ProgressBar
-                        android:id="@+id/pb_xp"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="8dp"
-                        android:layout_marginTop="4dp"
-                        android:backgroundTint="@color/surface_card_alt"
-                        android:progress="0"
-                        android:progressTint="@color/accent_yellow" />
 
-                    <TextView
-                        android:id="@+id/tv_xp_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:layout_marginTop="2dp"
-                        android:fontFamily="@font/cinzel_regular"
-                        android:text="0 / 100 XP"
-                        android:textColor="@color/text_muted"
-                        android:textSize="10sp" />
-                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/cinzel_regular"
-                        android:text="Streak"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tv_streak_days"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="-4dp"
-                        android:fontFamily="@font/cinzel_regular"
-                        android:text="0"
-                        android:textColor="@color/accent_yellow"
-                        android:textSize="22sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="-6dp"
-                        android:fontFamily="@font/cinzel_regular"
-                        android:text="days"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="10sp" />
-                </LinearLayout>
             </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
-            <TextView
-                android:id="@+id/tv_daily_quote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/cinzel_regular"
-                android:text="💡 Quote hari ini:\nLoading motivasi..."
-                android:textAlignment="center"
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp"
-                android:textStyle="italic" />
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_success"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:elevation="99dp"
+            android:contentDescription="Animasi sukses quest"
+            android:visibility="gone"
+            app:lottie_autoPlay="false"
+            app:lottie_loop="false"
+            app:lottie_rawRes="@raw/confetti_success" />
 
-            <TextView
-                android:id="@+id/tv_sync_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_sync_badge"
-                android:fontFamily="@font/poppins_semibold"
-                android:paddingStart="14dp"
-                android:paddingTop="7dp"
-                android:paddingEnd="14dp"
-                android:paddingBottom="7dp"
-                android:text="☁ Cloud ready"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_skeleton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
-                android:visibility="visible"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
-                app:strokeColor="@color/gray_default"
-                app:strokeWidth="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="24dp">
-
-                    <View
-                        android:layout_width="120dp"
-                        android:layout_height="14dp"
-                        android:layout_marginBottom="20dp"
-                        android:background="@color/surface_card_alt" />
-
-                    <View
-                        android:layout_width="220dp"
-                        android:layout_height="24dp"
-                        android:layout_marginBottom="8dp"
-                        android:background="@color/surface_card_alt" />
-
-                    <View
-                        android:layout_width="160dp"
-                        android:layout_height="24dp"
-                        android:layout_marginBottom="32dp"
-                        android:background="@color/surface_card_alt" />
-
-                    <View
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:layout_marginBottom="32dp"
-                        android:background="@color/surface_card_alt" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:background="@color/surface_card_alt" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_skill"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:visibility="gone"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
-                app:strokeColor="@color/gray_default"
-                app:strokeWidth="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="24dp">
-
-                    <TextView
-                        android:id="@+id/tv_quest_progress"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="● ○ ○   Quest 1/3"
-                        android:textColor="@color/text_muted"
-                        android:textSize="13sp" />
-
-                    <ProgressBar
-                        android:id="@+id/pb_daily_progress"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="8dp"
-                        android:layout_marginTop="12dp"
-                        android:backgroundTint="@color/surface_card_alt"
-                        android:max="3"
-                        android:progress="0"
-                        android:progressTint="@color/accent_yellow" />
-
-                    <TextView
-                        android:id="@+id/tv_skill_category_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:letterSpacing="0.2"
-                        android:text="SKILL HARI INI"
-                        android:textColor="@color/accent_yellow"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:id="@+id/tv_skill_title"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:gravity="center"
-                        android:text=""
-                        android:textColor="@color/text_primary"
-                        android:textSize="24sp" />
-
-                    <TextView
-                        android:id="@+id/tv_skill_meta"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:text="+50 XP • Medium • ±5 menit"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
-
-                    <ImageView
-                        android:id="@+id/iv_skill_illustration"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:layout_marginTop="24dp"
-                        android:contentDescription="Ilustrasi kategori quest"
-                        tools:src="@android:drawable/ic_menu_gallery" />
-
-                    <TextView
-                        android:id="@+id/tv_quest_timer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
-                        android:fontFamily="@font/cinzel_semibold"
-                        android:gravity="center"
-                        android:text="Selesaikan kapan saja hari ini"
-                        android:textColor="@color/accent_yellow"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tv_quest_hint"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:gravity="center"
-                        android:text="Start quest untuk mulai timer."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_skip_quest"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="14dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Skip Quest"
-                        android:textColor="@color/danger_red_soft"
-                        android:textSize="13sp"
-                        android:visibility="gone"
-                        app:backgroundTint="@color/surface_card_alt"
-                        app:cornerRadius="14dp"
-                        app:strokeColor="@color/danger_red"
-                        app:strokeWidth="1dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_done"
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="16dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Start Quest"
-                        android:textColor="@color/primary_dark"
-                        android:textSize="16sp"
-                        app:backgroundTint="@color/accent_yellow"
-                        app:cornerRadius="14dp" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/lottie_success"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:elevation="99dp"
-        android:contentDescription="Animasi sukses quest"
-        android:visibility="gone"
-        app:lottie_autoPlay="false"
-        app:lottie_loop="false"
-        app:lottie_rawRes="@raw/confetti_success" />
+    </LinearLayout>
 
 </FrameLayout>

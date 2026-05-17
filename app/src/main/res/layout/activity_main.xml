@@ -8,14 +8,26 @@
     android:clipToPadding="false"
     android:background="@color/bg_light">
 
+    <!--
+        Fragment container: TIDAK pakai paddingBottom di sini.
+        Padding bawah sudah ditangani di masing-masing fragment
+        dengan paddingBottom="120dp" pada konten scrollnya.
+        Ini penting agar fragment tidak punya background layer
+        yang menutupi area cradle.
+    -->
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingBottom="120dp" />
+        android:clipToPadding="false" />
 
+    <!--
+        BottomAppBar adalah satu-satunya layer background di area bawah.
+        Tidak ada FrameLayout underlay apapun — itu yang menyebabkan
+        "layer aneh" di belakang notch selama ini.
+        fabCradleVerticalOffset="18dp" agar FAB menonjol cukup ke atas.
+    -->
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
         style="@style/Widget.MaterialComponents.BottomAppBar"
@@ -27,9 +39,9 @@
         app:backgroundTint="@color/bottom_nav_bg"
         app:elevation="0dp"
         app:fabAlignmentMode="center"
-        app:fabCradleMargin="12dp"
-        app:fabCradleRoundedCornerRadius="24dp"
-        app:fabCradleVerticalOffset="10dp"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="28dp"
+        app:fabCradleVerticalOffset="18dp"
         app:hideOnScroll="false" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -56,11 +68,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_bolt"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         app:backgroundTint="@color/accent_yellow"
         app:elevation="6dp"
         app:fabCustomSize="64dp"
         app:layout_anchor="@id/bottom_app_bar"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:maxImageSize="32dp"
+        app:pressedTranslationZ="0dp"
+        app:rippleColor="@android:color/transparent"
         app:shapeAppearanceOverlay="@style/ShapeAppearance.GenZRator.Circle"
         app:tint="@color/text_inverse" />
 

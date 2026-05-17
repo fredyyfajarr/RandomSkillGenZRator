@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         repo = AppRepository.getInstance(this);
         bottomNav = findViewById(R.id.bottom_navigation);
+        disableBottomNavClipping();
 
         try {
             bottomNav.setItemActiveIndicatorEnabled(false);
@@ -117,6 +119,31 @@ public class MainActivity extends AppCompatActivity {
 
         ensureLocalUserExists();
         requestNotificationPermissionAndSchedule();
+    }
+
+    private void disableBottomNavClipping() {
+        if (bottomNav == null) return;
+
+        disableClippingRecursively(bottomNav);
+
+        android.view.ViewParent parent = bottomNav.getParent();
+        if (parent instanceof ViewGroup) {
+            ViewGroup parentGroup = (ViewGroup) parent;
+            parentGroup.setClipChildren(false);
+            parentGroup.setClipToPadding(false);
+        }
+    }
+
+    private void disableClippingRecursively(View view) {
+        if (!(view instanceof ViewGroup)) return;
+
+        ViewGroup group = (ViewGroup) view;
+        group.setClipChildren(false);
+        group.setClipToPadding(false);
+
+        for (int i = 0; i < group.getChildCount(); i++) {
+            disableClippingRecursively(group.getChildAt(i));
+        }
     }
 
     private void applySavedThemeMode() {
