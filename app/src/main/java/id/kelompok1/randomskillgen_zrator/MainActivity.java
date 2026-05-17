@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -38,6 +39,8 @@ import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int MAX_CUSTOM_SKILLS = 30;
+
     private BottomNavigationView bottomNav;
     private AppRepository repo;
 
@@ -46,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
             {"Produktif", SkillCategory.PRODUCTIVE},
             {"Fun", SkillCategory.FUN},
             {"Edukasi", SkillCategory.EDUCATION},
+    };
+
+    private static final String[][] DIFFICULTY_OPTIONS = {
+            {"Easy - 1 menit", Skill.EASY},
+            {"Medium - 3 menit", Skill.MEDIUM},
+            {"Hard - 5 menit", Skill.HARD},
     };
 
     private final ActivityResultLauncher<String> notifPermissionLauncher =
@@ -66,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
         repo = AppRepository.getInstance(this);
         bottomNav = findViewById(R.id.bottom_navigation);
+        disableBottomNavClipping();
 
         try {
             bottomNav.setItemActiveIndicatorEnabled(false);
@@ -111,6 +121,31 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermissionAndSchedule();
     }
 
+    private void disableBottomNavClipping() {
+        if (bottomNav == null) return;
+
+        disableClippingRecursively(bottomNav);
+
+        android.view.ViewParent parent = bottomNav.getParent();
+        if (parent instanceof ViewGroup) {
+            ViewGroup parentGroup = (ViewGroup) parent;
+            parentGroup.setClipChildren(false);
+            parentGroup.setClipToPadding(false);
+        }
+    }
+
+    private void disableClippingRecursively(View view) {
+        if (!(view instanceof ViewGroup)) return;
+
+        ViewGroup group = (ViewGroup) view;
+        group.setClipChildren(false);
+        group.setClipToPadding(false);
+
+        for (int i = 0; i < group.getChildCount(); i++) {
+            disableClippingRecursively(group.getChildAt(i));
+        }
+    }
+
     private void applySavedThemeMode() {
         android.content.SharedPreferences prefs = getSharedPreferences("GenZPrefs", MODE_PRIVATE);
         boolean darkMode = prefs.getBoolean("darkMode", false);
@@ -144,12 +179,6 @@ public class MainActivity extends AppCompatActivity {
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()
-                .setCustomAnimations(
-                        R.anim.slide_in_right,
-                        R.anim.slide_out_left,
-                        R.anim.slide_in_left,
-                        R.anim.slide_out_right
-                )
                 .replace(R.id.fragment_container, fragment)
                 .commit();
     }
@@ -194,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tvQuote = view.findViewById(R.id.tv_zap_quote);
         MaterialButton btnCustom = view.findViewById(R.id.btn_zap_custom_skill);
-        MaterialButton btnManage = view.findViewById(R.id.btn_manage_custom_skill);
 
         String[] quotes = {
                 "\"Jangan nunggu motivasi datang, mulai aja dulu! 🚀\"",
@@ -208,11 +236,6 @@ public class MainActivity extends AppCompatActivity {
 
         btnCustom.setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
-            showCustomSkillDialog();
-        });
-
-        btnManage.setOnClickListener(v -> {
-            bottomSheetDialog.dismiss();
             showManageCustomSkillsDialog();
         });
 
@@ -221,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showCustomSkillDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Buat Challenge Custom 🎯");
+        builder.setTitle("Buat Challenge Custom");
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -237,31 +260,30 @@ public class MainActivity extends AppCompatActivity {
         tvCatLabel.setPadding(0, 24, 0, 8);
         layout.addView(tvCatLabel);
 
-        RadioGroup rgCategory = new RadioGroup(this);
-        rgCategory.setOrientation(RadioGroup.VERTICAL);
-
-        String[][] categories = {
-                {"🏃 Kesehatan", SkillCategory.HEALTH},
-                {"⚡ Produktif", SkillCategory.PRODUCTIVE},
-                {"🎮 Fun", SkillCategory.FUN},
-                {"📚 Edukasi", SkillCategory.EDUCATION},
-        };
-
-        for (String[] cat : categories) {
-            RadioButton rb = new RadioButton(this);
-            rb.setText(cat[0]);
-            rb.setTag(cat[1]);
-            rb.setPadding(0, 8, 0, 8);
-            rgCategory.addView(rb);
-        }
-
-        ((RadioButton) rgCategory.getChildAt(2)).setChecked(true);
+        RadioGroup rgCategory = createCategoryRadioGroup(SkillCategory.FUN);
         layout.addView(rgCategory);
 
-        builder.setView(layout);
+        TextView tvDifficultyLabel = new TextView(this);
+        tvDifficultyLabel.setText("Pilih Tingkat Kesulitan:");
+        tvDifficultyLabel.setTextSize(14f);
+        tvDifficultyLabel.setPadding(0, 24, 0, 8);
+        layout.addView(tvDifficultyLabel);
 
-        builder.setPositiveButton("Simpan", (dialog, which) -> {
-            String title = etTitle.getText().toString().trim();
+        RadioGroup rgDifficulty = createDifficultyRadioGroup(Skill.MEDIUM);
+        layout.addView(rgDifficulty);
+
+        TextView tvPreview = createCustomSkillPreview();
+        layout.addView(tvPreview);
+        bindCustomSkillPreview(tvPreview, rgCategory, rgDifficulty);
+
+        builder.setView(layout);
+        builder.setPositiveButton("Simpan", null);
+        builder.setNegativeButton("Batal", (d, w) -> d.cancel());
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnShowListener(dialogInterface ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String title = CustomSkillValidator.normalizeTitle(etTitle.getText().toString());
             String titleError = CustomSkillValidator.validateTitle(title);
 
             if (titleError != null) {
@@ -275,29 +297,52 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            int checkedId = rgCategory.getCheckedRadioButtonId();
-            RadioButton selected = rgCategory.findViewById(checkedId);
-
-            String chosenCategory = (selected != null && selected.getTag() != null)
-                    ? (String) selected.getTag()
-                    : SkillCategory.FUN;
-
-            int xpReward = SkillCategory.getXpForCategory(chosenCategory);
+            String chosenCategory = selectedCategory(rgCategory);
+            String chosenDifficulty = selectedDifficulty(rgDifficulty);
+            int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
+            int durationMinutes = durationForDifficulty(chosenDifficulty);
             String uid = fUser.getUid();
 
-            repo.getExecutor().execute(() ->
-                    repo.addCustomSkill(uid, title, chosenCategory, xpReward)
-            );
+            repo.getExecutor().execute(() -> {
+                if (repo.getCustomSkillCountForUser(uid) >= MAX_CUSTOM_SKILLS) {
+                    runOnUiThread(() -> Toast.makeText(
+                            this,
+                            "Maksimal " + MAX_CUSTOM_SKILLS + " custom challenge dulu.",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                    return;
+                }
 
-            Toast.makeText(
-                    this,
-                    "Challenge \"" + title + "\" ditambahkan ke pool pribadimu!",
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
+                if (repo.isCustomSkillTitleTaken(uid, title, 0)) {
+                    runOnUiThread(() -> Toast.makeText(
+                            this,
+                            "Challenge dengan judul itu sudah ada.",
+                            Toast.LENGTH_SHORT
+                    ).show());
+                    return;
+                }
 
-        builder.setNegativeButton("Batal", (d, w) -> d.cancel());
-        builder.show();
+                    repo.addCustomSkill(
+                            uid,
+                            title,
+                            chosenCategory,
+                            xpReward,
+                            chosenDifficulty,
+                            durationMinutes
+                    );
+
+                runOnUiThread(() -> {
+                    Toast.makeText(
+                            this,
+                            "Challenge \"" + title + "\" ditambahkan ke pool pribadimu!",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    dialog.dismiss();
+                    showManageCustomSkillsDialog();
+                });
+            });
+        }));
+        dialog.show();
     }
 
     private void showCustomSkillEditor(Skill existingSkill) {
@@ -328,6 +373,21 @@ public class MainActivity extends AppCompatActivity {
         RadioGroup rgCategory = createCategoryRadioGroup(existingSkill.category);
         layout.addView(rgCategory);
 
+        TextView tvDifficultyLabel = new TextView(this);
+        tvDifficultyLabel.setText("Pilih Tingkat Kesulitan:");
+        tvDifficultyLabel.setTextSize(14f);
+        tvDifficultyLabel.setPadding(0, 24, 0, 8);
+        layout.addView(tvDifficultyLabel);
+
+        RadioGroup rgDifficulty = createDifficultyRadioGroup(
+                existingSkill.difficulty != null ? existingSkill.difficulty : Skill.MEDIUM
+        );
+        layout.addView(rgDifficulty);
+
+        TextView tvPreview = createCustomSkillPreview();
+        layout.addView(tvPreview);
+        bindCustomSkillPreview(tvPreview, rgCategory, rgDifficulty);
+
         builder.setView(layout);
         builder.setPositiveButton("Simpan Perubahan", null);
         builder.setNegativeButton("Batal", (d, w) -> d.cancel());
@@ -335,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.setOnShowListener(dialogInterface ->
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
-                    String title = etTitle.getText().toString().trim();
+                    String title = CustomSkillValidator.normalizeTitle(etTitle.getText().toString());
                     String titleError = CustomSkillValidator.validateTitle(title);
 
                     if (titleError != null) {
@@ -343,23 +403,46 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    int checkedId = rgCategory.getCheckedRadioButtonId();
-                    RadioButton selected = rgCategory.findViewById(checkedId);
-                    String chosenCategory = (selected != null && selected.getTag() != null)
-                            ? (String) selected.getTag()
-                            : SkillCategory.FUN;
+                    String chosenCategory = selectedCategory(rgCategory);
+                    String chosenDifficulty = selectedDifficulty(rgDifficulty);
+                    int xpReward = calculateCustomXp(chosenCategory, chosenDifficulty);
+                    int durationMinutes = durationForDifficulty(chosenDifficulty);
+                    FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (fUser == null) {
+                        Toast.makeText(this, "Kamu harus login dulu.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    int xpReward = SkillCategory.getXpForCategory(chosenCategory);
-                    repo.getExecutor().execute(() ->
-                            repo.updateCustomSkill(existingSkill, title, chosenCategory, xpReward)
-                    );
+                    String uid = fUser.getUid();
+                    repo.getExecutor().execute(() -> {
+                        if (repo.isCustomSkillTitleTaken(uid, title, existingSkill.id)) {
+                            runOnUiThread(() -> Toast.makeText(
+                                    this,
+                                    "Challenge dengan judul itu sudah ada.",
+                                    Toast.LENGTH_SHORT
+                            ).show());
+                            return;
+                        }
 
-                    Toast.makeText(
-                            this,
-                            "Challenge \"" + title + "\" diperbarui.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                    dialog.dismiss();
+                            repo.updateCustomSkill(
+                                    existingSkill,
+                                    title,
+                                    chosenCategory,
+                                    xpReward,
+                                    chosenDifficulty,
+                                    durationMinutes
+                            );
+
+                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                    this,
+                                    "Challenge \"" + title + "\" diperbarui.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                            dialog.dismiss();
+                            showManageCustomSkillsDialog();
+                        });
+                    });
                 })
         );
         dialog.show();
@@ -388,6 +471,124 @@ public class MainActivity extends AppCompatActivity {
         return rgCategory;
     }
 
+    private RadioGroup createDifficultyRadioGroup(String selectedDifficulty) {
+        RadioGroup rgDifficulty = new RadioGroup(this);
+        rgDifficulty.setOrientation(RadioGroup.VERTICAL);
+
+        for (String[] difficulty : DIFFICULTY_OPTIONS) {
+            RadioButton rb = new RadioButton(this);
+            rb.setText(difficulty[0]);
+            rb.setTag(difficulty[1]);
+            rb.setPadding(0, 8, 0, 8);
+            rgDifficulty.addView(rb);
+
+            if (difficulty[1].equals(selectedDifficulty)) {
+                rb.setChecked(true);
+            }
+        }
+
+        if (rgDifficulty.getCheckedRadioButtonId() == -1 && rgDifficulty.getChildCount() > 1) {
+            ((RadioButton) rgDifficulty.getChildAt(1)).setChecked(true);
+        }
+
+        return rgDifficulty;
+    }
+
+    private String selectedCategory(RadioGroup rgCategory) {
+        int checkedId = rgCategory.getCheckedRadioButtonId();
+        RadioButton selected = rgCategory.findViewById(checkedId);
+
+        return selected != null && selected.getTag() != null
+                ? (String) selected.getTag()
+                : SkillCategory.FUN;
+    }
+
+    private TextView createCustomSkillPreview() {
+        TextView preview = new TextView(this);
+        preview.setTextSize(13f);
+        preview.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        preview.setPadding(0, 20, 0, 4);
+        return preview;
+    }
+
+    private void bindCustomSkillPreview(
+            TextView preview,
+            RadioGroup rgCategory,
+            RadioGroup rgDifficulty
+    ) {
+        RadioGroup.OnCheckedChangeListener listener = (group, checkedId) ->
+                updateCustomSkillPreview(preview, rgCategory, rgDifficulty);
+
+        rgCategory.setOnCheckedChangeListener(listener);
+        rgDifficulty.setOnCheckedChangeListener(listener);
+        updateCustomSkillPreview(preview, rgCategory, rgDifficulty);
+    }
+
+    private void updateCustomSkillPreview(
+            TextView preview,
+            RadioGroup rgCategory,
+            RadioGroup rgDifficulty
+    ) {
+        String category = selectedCategory(rgCategory);
+        String difficulty = selectedDifficulty(rgDifficulty);
+        int xpReward = calculateCustomXp(category, difficulty);
+        int durationMinutes = durationForDifficulty(difficulty);
+
+        preview.setText(
+                "Reward: +" + xpReward + " XP - Timer: " + durationMinutes + " menit"
+        );
+    }
+
+    private String selectedDifficulty(RadioGroup rgDifficulty) {
+        int checkedId = rgDifficulty.getCheckedRadioButtonId();
+        RadioButton selected = rgDifficulty.findViewById(checkedId);
+
+        return selected != null && selected.getTag() != null
+                ? (String) selected.getTag()
+                : Skill.MEDIUM;
+    }
+
+    private int durationForDifficulty(String difficulty) {
+        if (Skill.EASY.equals(difficulty)) {
+            return 1;
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return 5;
+        }
+        return 3;
+    }
+
+    private int calculateCustomXp(String category, String difficulty) {
+        int baseXp = SkillCategory.getXpForCategory(category);
+
+        if (Skill.EASY.equals(difficulty)) {
+            return Math.max(20, baseXp - 20);
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return baseXp + 30;
+        }
+        return baseXp;
+    }
+
+    private String labelForCategory(String category) {
+        for (String[] item : CATEGORY_OPTIONS) {
+            if (item[1].equals(category)) {
+                return item[0];
+            }
+        }
+        return "Fun";
+    }
+
+    private String labelForDifficulty(String difficulty) {
+        if (Skill.EASY.equals(difficulty)) {
+            return "Easy";
+        }
+        if (Skill.HARD.equals(difficulty)) {
+            return "Hard";
+        }
+        return "Medium";
+    }
+
     private void showManageCustomSkillsDialog() {
         FirebaseUser fUser = FirebaseAuth.getInstance().getCurrentUser();
         if (fUser == null) {
@@ -403,37 +604,61 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void renderCustomSkillManager(String uid, List<Skill> customSkills) {
-        if (customSkills == null || customSkills.isEmpty()) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Custom Challenge")
-                    .setMessage("Belum ada custom challenge. Buat challenge pertama dulu.")
-                    .setPositiveButton("Buat", (dialog, which) -> showCustomSkillDialog())
-                    .setNegativeButton("Tutup", null)
-                    .show();
-            return;
-        }
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setPadding(32, 28, 32, 24);
+
+        TextView title = new TextView(this);
+        title.setText("Custom Challenge");
+        title.setTextSize(20f);
+        title.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
+        root.addView(title);
+
+        TextView subtitle = new TextView(this);
+        subtitle.setText("Kelola challenge buatanmu untuk masuk ke pool quest harian.");
+        subtitle.setTextSize(13f);
+        subtitle.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        subtitle.setPadding(0, 6, 0, 18);
+        root.addView(subtitle);
 
         ScrollView scrollView = new ScrollView(this);
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
-        list.setPadding(32, 20, 32, 8);
+        list.setPadding(0, 0, 0, 8);
         scrollView.addView(list);
+        root.addView(scrollView, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("Kelola Custom Challenge")
-                .setView(scrollView)
-                .setPositiveButton("Tambah Baru", (d, w) -> showCustomSkillDialog())
-                .setNegativeButton("Tutup", null)
-                .create();
-
-        for (Skill skill : customSkills) {
-            list.addView(createCustomSkillRow(uid, skill, dialog));
+        if (customSkills == null || customSkills.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("Belum ada custom challenge. Buat challenge pertama dulu.");
+            empty.setTextSize(14f);
+            empty.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+            empty.setPadding(0, 20, 0, 24);
+            list.addView(empty);
+        } else {
+            for (Skill skill : customSkills) {
+                list.addView(createCustomSkillRow(uid, skill, dialog));
+            }
         }
 
+        MaterialButton add = new MaterialButton(this);
+        add.setText("Tambah Baru");
+        add.setTextColor(ContextCompat.getColor(this, R.color.primary_dark));
+        add.setOnClickListener(v -> {
+            dialog.dismiss();
+            showCustomSkillDialog();
+        });
+        root.addView(add);
+
+        dialog.setContentView(root);
         dialog.show();
     }
 
-    private View createCustomSkillRow(String uid, Skill skill, AlertDialog parentDialog) {
+    private View createCustomSkillRow(String uid, Skill skill, BottomSheetDialog parentDialog) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.VERTICAL);
         row.setPadding(0, 10, 0, 18);
@@ -445,7 +670,15 @@ public class MainActivity extends AppCompatActivity {
         row.addView(title);
 
         TextView meta = new TextView(this);
-        meta.setText(skill.category.toUpperCase() + " - +" + skill.xp_reward + " XP");
+        int durationMinutes = skill.duration_minutes > 0
+                ? skill.duration_minutes
+                : durationForDifficulty(skill.difficulty);
+        meta.setText(
+                labelForCategory(skill.category)
+                        + " - " + labelForDifficulty(skill.difficulty)
+                        + " - " + durationMinutes + " menit"
+                        + " - +" + skill.xp_reward + " XP"
+        );
         meta.setTextSize(12f);
         meta.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         meta.setPadding(0, 4, 0, 8);
@@ -462,7 +695,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         MaterialButton delete = new MaterialButton(this);
-        delete.setText("Delete");
+        delete.setText("Hapus");
         delete.setTextColor(ContextCompat.getColor(this, R.color.danger_red));
         delete.setOnClickListener(v -> confirmDeleteCustomSkill(uid, skill, parentDialog));
 
@@ -473,7 +706,7 @@ public class MainActivity extends AppCompatActivity {
         return row;
     }
 
-    private void confirmDeleteCustomSkill(String uid, Skill skill, AlertDialog parentDialog) {
+    private void confirmDeleteCustomSkill(String uid, Skill skill, BottomSheetDialog parentDialog) {
         new AlertDialog.Builder(this)
                 .setTitle("Hapus Challenge?")
                 .setMessage("Challenge custom yang sudah pernah muncul di quest tidak akan dihapus agar history tetap aman.")

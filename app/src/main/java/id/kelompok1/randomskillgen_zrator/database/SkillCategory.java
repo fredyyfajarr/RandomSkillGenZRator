@@ -44,6 +44,19 @@ public final class SkillCategory {
         }
     }
 
+    public static String normalize(@Nullable String category) {
+        if (category == null) return FUN;
+        switch (category) {
+            case HEALTH:
+            case PRODUCTIVE:
+            case EDUCATION:
+            case FUN:
+                return category;
+            default:
+                return FUN;
+        }
+    }
+
     // --- FITUR BARU: Sentralisasi Warna UI (Persiapan Modern Gen-Z Look) ---
     // (Note: Pastikan warna-warna ini nanti kita definisikan di colors.xml)
     public static int getColorResForCategory(@Nullable String category) {

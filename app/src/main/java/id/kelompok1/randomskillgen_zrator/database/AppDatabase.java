@@ -16,7 +16,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
                 User.class,
                 Achievement.class
         },
-        version = 7,
+        version = 8,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -91,6 +91,20 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_7_8 = new Migration(7, 8) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_Skill_firebase_uid_is_custom " +
+                            "ON Skill (firebase_uid, is_custom)"
+            );
+            db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_Skill_firebase_uid_title " +
+                            "ON Skill (firebase_uid, title)"
+            );
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
@@ -105,7 +119,8 @@ public abstract class AppDatabase extends RoomDatabase {
                                      MIGRATION_3_4,
                                      MIGRATION_4_5,
                                      MIGRATION_5_6,
-                                     MIGRATION_6_7
+                                     MIGRATION_6_7,
+                                     MIGRATION_7_8
                              )
                             .build();
                 }

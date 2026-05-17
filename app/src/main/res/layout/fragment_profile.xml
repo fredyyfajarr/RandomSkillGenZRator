@@ -4,247 +4,265 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light">
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
-    <androidx.core.widget.NestedScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:paddingBottom="120dp">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:fillViewport="true"
+            android:overScrollMode="ifContentScrolls">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/cinzel_semibold"
-                android:text="Profile"
-                android:textColor="@color/text_primary"
-                android:textSize="28sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/poppins_regular"
-                android:text="Kelola akun dan perjalanan skill kamu."
-                android:textColor="@color/text_secondary"
-                android:textSize="13sp" />
-
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
-                app:strokeColor="@color/gray_default"
-                app:strokeWidth="1dp">
+                android:orientation="vertical"
+                android:paddingStart="24dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="24dp">
 
-                <LinearLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/cinzel_semibold"
+                    android:text="Profile"
+                    android:textColor="@color/text_primary"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:text="Kelola akun dan perjalanan skill kamu."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="24dp">
+                    android:layout_marginTop="24dp"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/gray_default"
+                    app:strokeWidth="1dp">
 
-                    <ImageView
-                        android:id="@+id/iv_avatar"
-                        android:layout_width="96dp"
-                        android:layout_height="96dp"
-                        android:background="@drawable/bg_circle"
-                        android:backgroundTint="@color/surface_card_alt"
-                        android:padding="0dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_custom_profile" />
-
-                    <TextView
-                        android:id="@+id/tv_profile_name"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:fontFamily="@font/poppins_semibold"
                         android:gravity="center"
-                        android:text="Hero Gen-Z"
-                        android:textColor="@color/text_primary"
-                        android:textSize="22sp" />
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
-                    <TextView
-                        android:id="@+id/tv_tier"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/cinzel_regular"
-                        android:gravity="center"
-                        android:text="[ NOVICE ADVENTURER ]"
-                        android:textColor="@color/accent_yellow"
-                        android:textSize="13sp" />
+                        <ImageView
+                            android:id="@+id/iv_avatar"
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:background="@drawable/bg_circle"
+                            android:backgroundTint="@color/surface_card_alt"
+                            android:padding="0dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/ic_custom_profile" />
 
-                    <TextView
-                        android:id="@+id/tv_profile_level"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
-                        android:fontFamily="@font/cinzel_semibold"
-                        android:text="LV.1"
-                        android:textColor="@color/accent_yellow"
-                        android:textSize="34sp" />
+                        <TextView
+                            android:id="@+id/tv_profile_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:gravity="center"
+                            android:text="Hero Gen-Z"
+                            android:textColor="@color/text_primary"
+                            android:textSize="22sp" />
 
-                    <ProgressBar
-                        android:id="@+id/pb_profile_xp"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="10dp"
-                        android:layout_marginTop="14dp"
-                        android:backgroundTint="@color/surface_card_alt"
-                        android:max="100"
-                        android:progress="0"
-                        android:progressTint="@color/accent_yellow" />
+                        <TextView
+                            android:id="@+id/tv_tier"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/cinzel_regular"
+                            android:gravity="center"
+                            android:text="[ NOVICE ADVENTURER ]"
+                            android:textColor="@color/accent_yellow"
+                            android:textSize="13sp" />
 
-                    <TextView
-                        android:id="@+id/tv_xp_details"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:text="0 / 100 XP"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        <TextView
+                            android:id="@+id/tv_profile_level"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:fontFamily="@font/cinzel_semibold"
+                            android:text="LV.1"
+                            android:textColor="@color/accent_yellow"
+                            android:textSize="34sp" />
 
-                    <TextView
-                        android:id="@+id/tv_sync_status"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:background="@drawable/bg_sync_badge"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:paddingStart="14dp"
-                        android:paddingTop="7dp"
-                        android:paddingEnd="14dp"
-                        android:paddingBottom="7dp"
-                        android:text="⏳ Menyinkron..."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        android:visibility="gone" />
+                        <ProgressBar
+                            android:id="@+id/pb_profile_xp"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="10dp"
+                            android:layout_marginTop="14dp"
+                            android:backgroundTint="@color/surface_card_alt"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressTint="@color/accent_yellow" />
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:id="@+id/tv_xp_details"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="0 / 100 XP"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/gray_default"
-                app:strokeWidth="1dp">
+                        <TextView
+                            android:id="@+id/tv_sync_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:background="@drawable/bg_sync_badge"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:paddingStart="14dp"
+                            android:paddingTop="7dp"
+                            android:paddingEnd="14dp"
+                            android:paddingBottom="7dp"
+                            android:text="⏳ Menyinkron..."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
 
-                <LinearLayout
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:layout_marginTop="18dp"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/gray_default"
+                    app:strokeWidth="1dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Appearance"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:text="Atur tampilan aplikasi sesuai suasana kamu."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_dark_mode"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Dark Mode: OFF"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        app:thumbTint="@color/accent_yellow"
-                        app:trackTint="@color/surface_card_alt" />
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Appearance"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                app:cardBackgroundColor="@color/surface_card"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/gray_default"
-                app:strokeWidth="1dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="Atur tampilan aplikasi sesuai suasana kamu."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
 
-                <LinearLayout
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switch_dark_mode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Dark Mode: OFF"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            app:thumbTint="@color/accent_yellow"
+                            app:trackTint="@color/surface_card_alt" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="18dp">
+                    android:layout_marginTop="18dp"
+                    app:cardBackgroundColor="@color/surface_card"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/gray_default"
+                    app:strokeWidth="1dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Account Actions"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:text="Reset progress atau keluar dari akun."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_reset_data"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginTop="18dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Reset Journey"
-                        android:textColor="@color/danger_red_soft"
-                        android:textSize="14sp"
-                        app:backgroundTint="@color/surface_card_alt"
-                        app:cornerRadius="14dp"
-                        app:strokeColor="@color/danger_red"
-                        app:strokeWidth="1dp" />
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_logout"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginTop="12dp"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:text="Logout"
-                        android:textColor="@color/text_inverse"
-                        android:textSize="14sp"
-                        app:backgroundTint="@color/accent_yellow"
-                        app:cornerRadius="14dp" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Account Actions"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:text="Reset progress atau keluar dari akun."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
 
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_reset_data"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="18dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Reset Journey"
+                            android:textColor="@color/danger_red_soft"
+                            android:textSize="14sp"
+                            app:backgroundTint="@color/surface_card_alt"
+                            app:cornerRadius="14dp"
+                            app:strokeColor="@color/danger_red"
+                            app:strokeWidth="1dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_logout"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:text="Logout"
+                            android:textColor="@color/text_inverse"
+                            android:textSize="14sp"
+                            app:backgroundTint="@color/accent_yellow"
+                            app:cornerRadius="14dp" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+    </LinearLayout>
 
 </FrameLayout>

@@ -29,6 +29,7 @@ import id.kelompok1.randomskillgen_zrator.database.Skill;
 import id.kelompok1.randomskillgen_zrator.database.SkillCategory;
 import id.kelompok1.randomskillgen_zrator.database.SyncState;
 import id.kelompok1.randomskillgen_zrator.database.User;
+import id.kelompok1.randomskillgen_zrator.domain.CustomSkillValidator;
 import id.kelompok1.randomskillgen_zrator.domain.StreakCalculator;
 import id.kelompok1.randomskillgen_zrator.domain.XpCalculator;
 
@@ -37,13 +38,13 @@ public class MainViewModel extends AndroidViewModel {
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<Skill> currentSkill = new MutableLiveData<>();
     private final MutableLiveData<DailySkill> currentRecord = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> showSuccessDialogEvent = new MutableLiveData<>(false);
+    private final MutableLiveData<Event<Integer>> showSuccessDialogEvent = new MutableLiveData<>();
     private final MutableLiveData<Integer> dailyProgress = new MutableLiveData<>(0);
     private final MutableLiveData<String> dailyQuote = new MutableLiveData<>();
     private final MutableLiveData<SyncState> syncState = new MutableLiveData<>(SyncState.IDLE);
     private final MutableLiveData<Boolean> streakBonusActive = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> todayFinishedFromCloud = new MutableLiveData<>(false);
-    private final MutableLiveData<Achievement> achievementUnlockedEvent = new MutableLiveData<>();
+    private final MutableLiveData<Event<Achievement>> achievementUnlockedEvent = new MutableLiveData<>();
 
     private final AppRepository repo;
     private final FirebaseSyncManager firebaseSync;
@@ -75,7 +76,7 @@ public class MainViewModel extends AndroidViewModel {
         return currentRecord;
     }
 
-    public LiveData<Boolean> getShowSuccessDialogEvent() {
+    public LiveData<Event<Integer>> getShowSuccessDialogEvent() {
         return showSuccessDialogEvent;
     }
 
@@ -103,7 +104,7 @@ public class MainViewModel extends AndroidViewModel {
         return todayFinishedFromCloud;
     }
 
-    public LiveData<Achievement> getAchievementUnlockedEvent() {
+    public LiveData<Event<Achievement>> getAchievementUnlockedEvent() {
         return achievementUnlockedEvent;
     }
 
@@ -112,7 +113,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void resetSuccessDialogEvent() {
-        showSuccessDialogEvent.setValue(false);
+        showSuccessDialogEvent.setValue(null);
     }
 
     public void loadHomeData() {
@@ -189,20 +190,28 @@ public class MainViewModel extends AndroidViewModel {
 
         Boolean completed = doc.getBoolean("is_completed");
         Long xpLong = doc.getLong("xp_reward");
+        Long durationLong = doc.getLong("duration_minutes");
         Long startedAtMillisLong = doc.getLong("started_at_millis");
 
         if (date == null || date.trim().isEmpty()) return;
-        if (title == null || title.trim().isEmpty()) return;
+        title = CustomSkillValidator.normalizeTitle(title);
+        if (CustomSkillValidator.validateTitle(title) != null) return;
 
-        if (category == null) category = SkillCategory.FUN;
-        if (difficulty == null) difficulty = Skill.MEDIUM;
+        category = SkillCategory.normalize(category);
+        difficulty = Skill.normalizeDifficulty(difficulty);
 
-        int xp = xpLong != null ? xpLong.intValue() : SkillCategory.getXpForCategory(category);
+        int xp = xpLong != null
+                ? Math.max(20, Math.min(150, xpLong.intValue()))
+                : SkillCategory.getXpForCategory(category);
+        int durationMinutes = Skill.normalizeDuration(
+                durationLong != null ? durationLong.intValue() : 0,
+                difficulty
+        );
 
         Skill skill = repo.getSkillByTitleForUserOrGlobal(title, uid);
 
         if (skill == null) {
-            repo.addCustomSkill(uid, title, category, xp);
+            repo.addCustomSkill(uid, title, category, xp, difficulty, durationMinutes);
             skill = repo.getSkillByTitleForUserOrGlobal(title, uid);
         }
 
@@ -465,7 +474,7 @@ public class MainViewModel extends AndroidViewModel {
 
             List<Achievement> newlyUnlocked = repo.evaluateAchievements(uid);
             if (newlyUnlocked != null && !newlyUnlocked.isEmpty()) {
-                achievementUnlockedEvent.postValue(newlyUnlocked.get(0));
+                achievementUnlockedEvent.postValue(new Event<>(newlyUnlocked.get(0)));
             }
 
             syncToFirestore(uid, u);
@@ -476,7 +485,7 @@ public class MainViewModel extends AndroidViewModel {
             }
 
             user.postValue(u);
-            showSuccessDialogEvent.postValue(true);
+            showSuccessDialogEvent.postValue(new Event<>(lastGainedXp));
             dailyProgress.postValue(finishedAfter);
 
             if (finishedAfter < 3) {
